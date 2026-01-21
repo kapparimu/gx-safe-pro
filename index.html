@@ -19,9 +19,8 @@
             overscroll-behavior-y: contain;
         }
         .hidden-section { display: none; }
-        .touch-target { min-height: 48px; } /* Mobile Standard */
+        .touch-target { min-height: 48px; }
         
-        /* 印刷設定 */
         @media print {
             .no-print { display: none !important; }
             body { background-color: white !important; padding: 0 !important; }
@@ -31,7 +30,6 @@
             th, td { border: 1px solid #000 !important; padding: 1px !important; word-break: break-all; }
         }
 
-        /* フォーム入力補助 */
         .input-focus:focus { outline: 3px solid var(--safety-blue); border-color: transparent; }
         .dot-flashing {
             position: relative; width: 10px; height: 10px; border-radius: 5px;
@@ -39,7 +37,6 @@
         }
         @keyframes dot-flashing { 0% { opacity: 1; } 50%, 100% { opacity: 0.2; } }
         
-        /* AI Glow Effect */
         .ai-glow {
             box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
             border: 1px solid rgba(14, 165, 233, 0.3);
@@ -48,12 +45,10 @@
 </head>
 <body class="pb-24">
 
-    <!-- Global Loading Overlay -->
     <div id="global-loader" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
         <div class="dot-flashing"></div>
     </div>
 
-    <!-- Header -->
     <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg no-print">
         <div>
             <h1 class="font-extrabold text-lg leading-tight">GX-SAFE <span class="text-sky-400">PRO</span></h1>
@@ -67,15 +62,12 @@
 
     <main class="max-w-4xl mx-auto p-4 print-container">
         
-        <!-- DASHBOARD (Home) -->
         <section id="view-dashboard" class="space-y-4 no-print">
-            <!-- Unified Date Selection -->
             <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
                 <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-wider">管理日付の選択</label>
                 <input type="date" id="input-date" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-xl font-bold outline-none focus:ring-4 focus:ring-sky-500/20 transition-all touch-target" onchange="loadTodayData()">
             </div>
 
-            <!-- Work Content -->
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-4 tracking-widest">本日の作業内容</h2>
                 <textarea id="work-content-area" rows="4" placeholder="現場名、作業目的、責任者などを記入..." 
@@ -90,7 +82,6 @@
                 </div>
             </div>
 
-            <!-- Summary Statistics -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-sky-500">
                     <p class="text-[10px] font-bold text-slate-400 uppercase">最新酸素 O2</p>
@@ -108,7 +99,6 @@
                 </div>
             </div>
 
-            <!-- AI Insight Card -->
             <div id="ai-insight-card" class="bg-white p-6 rounded-3xl border border-sky-100 ai-glow relative overflow-hidden">
                 <div class="absolute top-0 right-0 p-4 opacity-5"><span class="text-6xl text-sky-500">✨</span></div>
                 <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-3">
@@ -125,14 +115,12 @@
             </div>
         </section>
 
-        <!-- DAILY LOG (ENTRY) -->
         <section id="view-daily" class="hidden-section no-print space-y-6">
             <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2">
                 記録入力 <span id="current-date-badge" class="text-xs bg-slate-200 px-3 py-1 rounded-full text-slate-500">----/--/--</span>
             </h2>
 
             <div id="entry-accordion" class="space-y-4">
-                <!-- Step 1: Pre-start Inspection -->
                 <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
                     <button onclick="toggleAccordion('inspection')" class="w-full p-5 flex justify-between items-center bg-slate-800 text-white">
                         <div class="text-left">
@@ -145,8 +133,6 @@
                         <div id="inspection-items-container" class="grid grid-cols-1 gap-3"></div>
                     </div>
                 </div>
-
-                <!-- Dynamic Measurement Points -->
                 <div id="measurement-points-container" class="space-y-4"></div>
             </div>
 
@@ -155,7 +141,6 @@
             </button>
         </section>
 
-        <!-- MONTHLY REPORT -->
         <section id="view-monthly" class="hidden-section space-y-4">
             <div class="no-print flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                 <h2 class="text-2xl font-black text-slate-800">月次レポート</h2>
@@ -172,14 +157,12 @@
                     <p class="text-xs" id="print-month-title"></p>
                 </div>
                 <table class="w-full text-left border-collapse" id="monthly-table">
-                    <!-- Table content generated dynamically -->
                 </table>
             </div>
         </section>
 
     </main>
 
-    <!-- Navigation -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-6 py-4 flex justify-between items-center z-50 no-print shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
         <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 text-sky-600">
             <span class="text-2xl">🏠</span><span class="text-[10px] font-extrabold uppercase">Home</span>
@@ -200,7 +183,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- 1. CONFIGURATION ---
         const config = {
             measurementPoints: [
                 { id: 'p1', label: '作業開始前', type: 'ポンプ' },
@@ -223,27 +205,17 @@
             ]
         };
 
-        // Firebase設定（公開時には自分の設定に書き換えてください）
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_ID",
-            appId: "YOUR_APP_ID"
-        };
-
+        const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gx3r-log-system-v2';
-        const apiKey = ""; // APIキーは実行環境で補完されます
+        const appId = window.__app_id || 'gx3r-log-system-v2';
+        const apiKey = "";
 
         let currentUser = null;
         let todayData = {};
         let inspectionState = {};
 
-        // --- 2. CORE UTILITIES ---
         const getLocalDateString = (date) => {
             const y = date.getFullYear();
             const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -280,7 +252,6 @@
             }
         }
 
-        // --- 3. FIREBASE & AUTH ---
         const startAuth = async () => {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                 await signInWithCustomToken(auth, __initial_auth_token);
@@ -294,7 +265,6 @@
 
         startAuth();
 
-        // --- 4. DATA SYNCHRONIZATION ---
         const getRecordDoc = (dateStr) => {
             if (!dateStr || dateStr.trim() === "") return null;
             return doc(db, 'artifacts', appId, 'public', 'data', 'daily_records', dateStr);
@@ -303,18 +273,15 @@
         window.loadTodayData = async () => {
             const dateStr = document.getElementById('input-date').value;
             if (!dateStr || !currentUser) return;
-            
             showLoader(true);
             const ref = getRecordDoc(dateStr);
             try {
                 const snap = await getDoc(ref);
                 todayData = snap.exists() ? snap.data() : {};
-                
                 document.getElementById('work-content-area').value = todayData.work_content || '';
                 const dateBadge = document.getElementById('current-date-badge');
                 if (dateBadge) dateBadge.innerText = dateStr;
                 inspectionState = todayData.inspection || {};
-                
                 renderInspectionUI();
                 renderEntryForms();
                 updateDashboardSummary();
@@ -338,53 +305,41 @@
         window.saveDailyRecord = async () => {
             const dateStr = document.getElementById('input-date').value;
             if (!currentUser || !dateStr) return;
-            
             showLoader(true);
-            const record = { 
-                inspection: inspectionState, 
-                work_content: document.getElementById('work-content-area').value, 
-                timestamp: Date.now() 
-            };
-
+            const record = { inspection: inspectionState, work_content: document.getElementById('work-content-area').value, timestamp: Date.now() };
             config.measurementPoints.forEach(p => {
                 const pData = {};
                 let hasPointData = false;
                 config.gases.forEach(g => {
                     const el = document.getElementById(`${p.id}-${g.id}`);
                     const val = g.step === '1' ? parseInt(el?.value) : parseFloat(el?.value);
-                    if (!isNaN(val)) {
-                        pData[g.id] = val;
-                        hasPointData = true;
-                    }
+                    if (!isNaN(val)) { pData[g.id] = val; hasPointData = true; }
                 });
                 if (hasPointData) record[p.id] = pData;
             });
-
             await setDoc(getRecordDoc(dateStr), record, { merge: true });
             todayData = record;
             renderEntryForms();
             updateDashboardSummary();
             showLoader(false);
+            if (document.getElementById('view-monthly').classList.contains('hidden-section') === false) {
+                loadMonthlyTable();
+            }
             switchTab('dashboard');
         };
 
-        // --- 5. UI RENDERING ---
         function renderInspectionUI() {
             const container = document.getElementById('inspection-items-container');
             if (!container) return;
             container.innerHTML = config.inspectionItems.map(item => `
                 <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <div class="flex-1">
-                        <p class="text-sm font-bold text-slate-700">${item.label}</p>
-                        <p class="text-[10px] text-slate-400 font-medium">${item.desc}</p>
-                    </div>
+                    <div class="flex-1"><p class="text-sm font-bold text-slate-700">${item.label}</p><p class="text-[10px] text-slate-400 font-medium">${item.desc}</p></div>
                     <div class="flex bg-white rounded-xl p-1 border shadow-sm">
                         <button onclick="setInspection('${item.id}', true)" class="px-5 py-2 rounded-lg text-xs font-bold transition-all ${inspectionState[item.id] === true ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-400'}">良</button>
                         <button onclick="setInspection('${item.id}', false)" class="px-5 py-2 rounded-lg text-xs font-bold transition-all ${inspectionState[item.id] === false ? 'bg-rose-500 text-white shadow-md' : 'text-slate-400'}">否</button>
                     </div>
                 </div>
             `).join('');
-            
             const isAllOk = config.inspectionItems.every(i => inspectionState[i.id] === true);
             const badge = document.getElementById('badge-inspection');
             if (badge) {
@@ -410,171 +365,83 @@
         function renderEntryForms() {
             const container = document.getElementById('measurement-points-container');
             if (!container) return;
-            
             container.innerHTML = config.measurementPoints.map(p => `
                 <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
                     <button onclick="toggleAccordion('${p.id}')" class="w-full p-5 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors">
-                        <div class="text-left">
-                            <span class="text-[10px] font-black text-sky-600 uppercase tracking-widest">Step ${p.id.slice(1) == '1' ? '2' : parseInt(p.id.slice(1)) + 1}</span>
-                            <h3 class="font-bold text-slate-800 text-lg">${p.label} <span class="text-xs text-slate-400 font-normal">(${p.type})</span></h3>
-                        </div>
-                        <span id="badge-${p.id}" class="text-[10px] px-3 py-1 ${(todayData[p.id]) ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'} rounded-full font-bold">
-                            ${(todayData[p.id]) ? '記録済' : '未記入'}
-                        </span>
+                        <div class="text-left"><span class="text-[10px] font-black text-sky-600 uppercase tracking-widest">Step ${p.id.slice(1) == '1' ? '2' : parseInt(p.id.slice(1)) + 1}</span><h3 class="font-bold text-slate-800 text-lg">${p.label} <span class="text-xs text-slate-400 font-normal">(${p.type})</span></h3></div>
+                        <span id="badge-${p.id}" class="text-[10px] px-3 py-1 ${(todayData[p.id]) ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'} rounded-full font-bold">${(todayData[p.id]) ? '記録済' : '未記入'}</span>
                     </button>
                     <div id="content-${p.id}" class="p-6 grid grid-cols-2 gap-4 hidden border-t border-slate-100">
-                        ${config.gases.map(g => `
-                            <div class="space-y-1.5">
-                                <label class="text-[11px] font-extrabold text-slate-400 uppercase tracking-tighter">${g.label} ${g.id.toUpperCase()} (${g.unit})</label>
-                                <input type="number" step="${g.step}" inputmode="decimal" id="${p.id}-${g.id}" 
-                                       oninput="handleManualInput('${p.id}')" 
-                                       value="${todayData[p.id]?.[g.id] || ''}" 
-                                       placeholder="${g.default}"
-                                       class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 input-focus font-black text-lg text-slate-800 transition-all shadow-inner">
-                            </div>
-                        `).join('')}
+                        ${config.gases.map(g => `<div class="space-y-1.5"><label class="text-[11px] font-extrabold text-slate-400 uppercase tracking-tighter">${g.label} ${g.id.toUpperCase()} (${g.unit})</label><input type="number" step="${g.step}" inputmode="decimal" id="${p.id}-${g.id}" oninput="handleManualInput('${p.id}')" value="${todayData[p.id]?.[g.id] || ''}" placeholder="${g.default}" class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 input-focus font-black text-lg text-slate-800 shadow-inner"></div>`).join('')}
                     </div>
                 </div>
             `).join('');
-            
             config.measurementPoints.forEach(p => handleManualInput(p.id));
         }
 
         window.loadMonthlyTable = async () => {
-            const monthVal = document.getElementById('report-month').value;
+            const selectEl = document.getElementById('report-month');
+            if (!selectEl) return;
+            const monthVal = selectEl.value;
             const table = document.getElementById('monthly-table');
+            const printTitle = document.getElementById('print-month-title');
+            if (printTitle) printTitle.innerText = monthVal + " 分";
             
-            table.innerHTML = `
-                <thead class="bg-slate-900 text-white">
-                    <tr>
-                        <th class="border border-slate-700 p-2" rowspan="2" style="width: 40px;">日付</th>
-                        <th class="border border-slate-700 p-2" rowspan="2" style="width: 100px;">作業内容</th>
-                        <th class="border border-slate-700 p-2 text-center" rowspan="2" style="width: 30px;">点検</th>
-                        ${config.measurementPoints.map(p => `<th class="border border-slate-700 p-2 text-center text-[8px]" colspan="${config.gases.length}">${p.label}</th>`).join('')}
-                    </tr>
-                    <tr class="bg-slate-800 text-[6px]">
-                        ${config.measurementPoints.map(p => config.gases.map(g => `<th class="border border-slate-700 p-1 text-center">${g.id.toUpperCase()}</th>`).join('')).join('')}
-                    </tr>
-                </thead>
-                <tbody id="monthly-table-body" class="bg-white"></tbody>
-            `;
-
+            table.innerHTML = `<thead class="bg-slate-900 text-white"><tr><th class="border border-slate-700 p-2" rowspan="2" style="width: 40px;">日付</th><th class="border border-slate-700 p-2" rowspan="2" style="width: 100px;">作業内容</th><th class="border border-slate-700 p-2 text-center" rowspan="2" style="width: 30px;">点検</th>${config.measurementPoints.map(p => `<th class="border border-slate-700 p-2 text-center text-[8px]" colspan="${config.gases.length}">${p.label}</th>`).join('')}</tr><tr class="bg-slate-800 text-[6px]">${config.measurementPoints.map(p => config.gases.map(g => `<th class="border border-slate-700 p-1 text-center">${g.id.toUpperCase()}</th>`).join('')).join('')}</tr></thead><tbody id="monthly-table-body" class="bg-white"></tbody>`;
             const body = document.getElementById('monthly-table-body');
             body.innerHTML = '<tr><td colspan="30" class="text-center p-8"><div class="dot-flashing mx-auto"></div></td></tr>';
-
             try {
                 const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'daily_records'));
                 const monthData = snap.docs.filter(d => d.id.startsWith(monthVal)).sort((a, b) => a.id.localeCompare(b.id));
-
-                if (monthData.length === 0) {
-                    body.innerHTML = `<tr><td colspan="30" class="text-center p-8 font-bold text-slate-400">データなし (${monthVal})</td></tr>`;
-                    return;
-                }
-
+                if (monthData.length === 0) { body.innerHTML = `<tr><td colspan="30" class="text-center p-8 font-bold text-slate-400">なし (${monthVal})</td></tr>`; return; }
                 body.innerHTML = monthData.map(doc => {
-                    const d = doc.data();
-                    const day = doc.id.split('-')[2] + "日";
+                    const d = doc.data(); const day = doc.id.split('-')[2] + "日";
                     const isInspOk = d.inspection && config.inspectionItems.every(i => d.inspection[i.id] === true);
                     const inspText = isInspOk ? 'OK' : (d.inspection && Object.keys(d.inspection).length > 0 ? 'NG' : '-');
-                    
-                    let row = `<tr class="hover:bg-slate-50">
-                        <td class="border p-1 font-black text-center text-[8px]">${day}</td>
-                        <td class="border p-1 text-[7px] leading-tight">${d.work_content || '-'}</td>
-                        <td class="border p-1 text-center text-[8px] font-bold ${isInspOk ? 'text-emerald-600' : 'text-rose-600'}">${inspText}</td>`;
-                    
-                    config.measurementPoints.forEach(p => {
-                        const pD = d[p.id] || {};
-                        config.gases.forEach(g => {
-                            const val = pD[g.id];
-                            let isWarning = false;
-                            if (val !== undefined) {
-                                if (g.threshold.min && val < g.threshold.min) isWarning = true;
-                                if (g.threshold.max && val > g.threshold.max) isWarning = true;
-                            }
-                            row += `<td class="border p-1 text-center text-[7px] ${isWarning ? 'bg-rose-50 text-rose-600 font-bold' : ''}">${val ?? '-'}</td>`;
-                        });
-                    });
+                    let row = `<tr class="hover:bg-slate-50"><td class="border p-1 font-black text-center text-[8px]">${day}</td><td class="border p-1 text-[7px] leading-tight">${d.work_content || '-'}</td><td class="border p-1 text-center text-[8px] font-bold ${isInspOk ? 'text-emerald-600' : 'text-rose-600'}">${inspText}</td>`;
+                    config.measurementPoints.forEach(p => { const pD = d[p.id] || {}; config.gases.forEach(g => { const val = pD[g.id]; let isWarning = false; if (val !== undefined) { if (g.threshold.min && val < g.threshold.min) isWarning = true; if (g.threshold.max && val > g.threshold.max) isWarning = true; } row += `<td class="border p-1 text-center text-[7px] ${isWarning ? 'bg-rose-50 text-rose-600 font-bold' : ''}">${val ?? '-'}</td>`; }); });
                     return row + `</tr>`;
                 }).join('');
-            } catch (err) {
-                console.error(err);
-                body.innerHTML = '<tr><td colspan="30" class="p-8 text-center text-rose-500">エラー</td></tr>';
-            }
+            } catch (err) { body.innerHTML = '<tr><td colspan="30" class="p-8 text-center text-rose-500">エラー</td></tr>'; }
         };
 
-        // --- 6. AI SUPPORT ---
         window.analyzeSafety = async () => {
             const area = document.getElementById('ai-chat-area'); if (!area) return;
             area.innerHTML = '<div class="dot-flashing mx-auto mt-4"></div>';
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `計測データ: ${JSON.stringify(todayData)}。作業内容: ${todayData.work_content || '未指定'}。専門家として安全分析と助言を日本語で。` }] }] })
-                });
-                const result = await response.json();
-                const text = result.candidates[0].content.parts[0].text;
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `データ: ${JSON.stringify(todayData)}。作業: ${todayData.work_content || '未指定'}。専門家として安全分析。` }] }] }) });
+                const result = await response.json(); const text = result.candidates[0].content.parts[0].text;
                 area.innerHTML = `<div class="p-2 animate-in fade-in duration-500 text-sm leading-relaxed">${text.replace(/\n/g, '<br>')}</div>`;
-                const speakBtn = document.getElementById('btn-ai-speak');
-                if (speakBtn) {
-                    speakBtn.disabled = false;
-                    speakBtn.onclick = () => speakSafetyText(text);
-                }
-            } catch (e) { area.innerText = "分析エラーが発生しました。"; }
+                const speakBtn = document.getElementById('btn-ai-speak'); if (speakBtn) { speakBtn.disabled = false; speakBtn.onclick = () => speakSafetyText(text); }
+            } catch (e) { area.innerText = "エラー"; }
         };
 
         window.generateRiskAssessment = async () => {
             const content = document.getElementById('work-content-area').value;
             const dashAi = document.getElementById('dash-ai-text');
-            if (!content) { if (dashAi) dashAi.innerText = "作業内容を入力してください。"; return; }
+            if (!content) { if (dashAi) dashAi.innerText = "作業内容を入力。"; return; }
             if (dashAi) dashAi.innerHTML = '<div class="dot-flashing mt-2"></div>';
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `作業内容: "${content}"。現場特有のガスの危険性と対策チェックリストを簡潔に。` }] }] })
-                });
-                const result = await response.json();
-                const text = result.candidates[0].content.parts[0].text;
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `作業: "${content}"のリスク分析と対策。` }] }] }) });
+                const result = await response.json(); const text = result.candidates[0].content.parts[0].text;
                 if (dashAi) dashAi.innerHTML = text.replace(/\n/g, '<br>');
-                const actionBtns = document.getElementById('ai-action-buttons');
-                if (actionBtns) actionBtns.classList.remove('hidden');
-                const speakBtn = document.getElementById('btn-speak-dash');
-                if (speakBtn) speakBtn.onclick = () => speakSafetyText(text);
-            } catch (e) { if (dashAi) dashAi.innerText = "予測に失敗しました。"; }
+                const actionBtns = document.getElementById('ai-action-buttons'); if (actionBtns) actionBtns.classList.remove('hidden');
+                const speakBtn = document.getElementById('btn-speak-dash'); if (speakBtn) speakBtn.onclick = () => speakSafetyText(text);
+            } catch (e) { if (dashAi) dashAi.innerText = "失敗"; }
         };
 
         async function speakSafetyText(text) {
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `落ち着いた口調で安全指示を読み上げてください: ${text.substring(0, 300)}` }] }],
-                        generationConfig: {
-                            responseModalities: ["AUDIO"],
-                            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
-                        }
-                    })
-                });
-                const data = await res.json();
-                const pcm = data.candidates[0].content.parts[0].inlineData.data;
-                const bin = atob(pcm);
-                const bytes = new Uint8Array(bin.length);
-                for(let i=0; i<bin.length; i++) bytes[i] = bin.charCodeAt(i);
-                const header = new ArrayBuffer(44);
-                const d = new DataView(header);
-                d.setUint32(0, 0x52494646, false); d.setUint32(4, 36 + bytes.length, true);
-                d.setUint32(8, 0x57415645, false); d.setUint32(12, 0x666d7420, false);
-                d.setUint32(16, 16, true); d.setUint16(20, 1, true); d.setUint16(22, 1, true);
-                d.setUint32(24, 24000, true); d.setUint32(28, 48000, true);
-                d.setUint16(32, 2, true); d.setUint16(34, 16, true);
-                d.setUint32(36, 0x64617461, false); d.setUint32(40, bytes.length, true);
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `安全指示: ${text.substring(0, 300)}` }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } } } }) });
+                const data = await res.json(); const pcm = data.candidates[0].content.parts[0].inlineData.data;
+                const bin = atob(pcm); const bytes = new Uint8Array(bin.length); for(let i=0; i<bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                const header = new ArrayBuffer(44); const d = new DataView(header);
+                d.setUint32(0, 0x52494646, false); d.setUint32(4, 36 + bytes.length, true); d.setUint32(8, 0x57415645, false); d.setUint32(12, 0x666d7420, false);
+                d.setUint32(16, 16, true); d.setUint16(20, 1, true); d.setUint16(22, 1, true); d.setUint32(24, 24000, true); d.setUint32(28, 48000, true); d.setUint16(32, 2, true); d.setUint16(34, 16, true); d.setUint32(36, 0x64617461, false); d.setUint32(40, bytes.length, true);
                 new Audio(URL.createObjectURL(new Blob([header, bytes], { type: 'audio/wav' }))).play();
-            } catch (e) { console.error("TTS failed", e); }
+            } catch (e) {}
         }
 
-        // --- 7. NAVIGATION ---
         window.switchTab = (tabId) => {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
             document.getElementById(`view-${tabId}`).classList.remove('hidden-section');
@@ -592,16 +459,18 @@
         window.onload = () => {
             const select = document.getElementById('report-month');
             const now = new Date();
-            for (let i = 0; i < 6; i++) {
-                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            for (let m = 1; m <= 7; m++) {
                 const opt = document.createElement('option');
-                opt.value = getLocalMonthString(d);
-                opt.text = d.getFullYear() + "年" + (d.getMonth() + 1) + "月";
+                opt.value = `2026-${String(m).padStart(2, '0')}`;
+                opt.text = `2026年${m}月`;
                 select.appendChild(opt);
             }
+            const currentMonthStr = getLocalMonthString(now);
+            if (currentMonthStr.startsWith("2026") && parseInt(currentMonthStr.split('-')[1]) <= 7) {
+                select.value = currentMonthStr;
+            } else { select.value = "2026-01"; }
             document.getElementById('input-date').value = getLocalDateString(now);
-            renderInspectionUI();
-            renderEntryForms();
+            renderInspectionUI(); renderEntryForms();
         };
     </script>
 </body>
