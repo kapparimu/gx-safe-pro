@@ -17,11 +17,12 @@
             font-family: 'Inter', 'Noto Sans JP', sans-serif;
             background-color: #f1f5f9;
             overscroll-behavior-y: contain;
+            -webkit-tap-highlight-color: transparent;
         }
         .hidden-section { display: none !important; }
         .touch-target { min-height: 48px; }
         
-        /* 印刷設定 */
+        /* Print Styles */
         @media print {
             .no-print { display: none !important; }
             body { background-color: white !important; padding: 0 !important; }
@@ -29,7 +30,6 @@
             .print-container { width: 100% !important; margin: 0 !important; padding: 5px !important; }
             table { font-size: 7px !important; border-collapse: collapse !important; width: 100% !important; table-layout: fixed; }
             th, td { border: 1px solid #000 !important; padding: 2px !important; word-break: break-all; }
-            .page-break { page-break-before: always; }
         }
 
         .input-focus:focus { outline: 3px solid var(--safety-blue); border-color: transparent; }
@@ -44,41 +44,39 @@
             border: 1px solid rgba(14, 165, 233, 0.3);
         }
 
-        /* カスタムメッセージボックス用 */
         #custom-alert {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 2000; display: none;
+            z-index: 9999; display: none;
         }
     </style>
 </head>
 <body class="pb-24">
 
-    <!-- メッセージ通知用 -->
-    <div id="custom-alert" class="bg-slate-800 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700 max-w-[90%]">
+    <!-- Custom Alert Notification -->
+    <div id="custom-alert" class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700 max-w-[90%] w-full">
         <span id="alert-icon">ℹ️</span>
         <p id="alert-message" class="text-xs font-bold leading-tight"></p>
     </div>
 
-    <!-- Global Loading Overlay -->
+    <!-- Loading Overlay -->
     <div id="global-loader" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
         <div class="dot-flashing"></div>
     </div>
 
-    <!-- Header -->
     <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg no-print">
         <div>
             <h1 class="font-extrabold text-lg leading-tight">GX-SAFE <span class="text-sky-400">PRO</span></h1>
             <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Digital Safety Logbook</p>
         </div>
-        <div id="sync-status" class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 rounded-full border border-slate-700">
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 rounded-full border border-slate-700">
             <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-            <span class="text-[10px] font-bold">LIVE SYNC</span>
+            <span class="text-[10px] font-bold tracking-tighter">CLOUD ACTIVE</span>
         </div>
     </header>
 
     <main class="max-w-4xl mx-auto p-4 print-container">
         
-        <!-- DASHBOARD (Home) -->
+        <!-- 1. DASHBOARD TAB -->
         <section id="view-dashboard" class="space-y-4 no-print">
             <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
                 <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-wider">管理日付の選択</label>
@@ -122,7 +120,7 @@
                     <span class="text-sky-500">✨</span> AI安全アドバイザー
                 </h3>
                 <div id="dash-ai-text" class="text-sm text-slate-600 leading-relaxed min-h-[50px]">
-                    現場の状況を分析するために、まずは作業内容または計測値を入力してください。
+                    作業内容や計測値を入力すると、AIがリアルタイムで安全診断を行います。
                 </div>
                 <div id="ai-action-buttons" class="hidden mt-4 pt-4 border-t border-slate-100 flex gap-3">
                     <button id="btn-speak-dash" class="flex-1 text-xs font-bold py-3 bg-sky-50 text-sky-700 rounded-xl border border-sky-100 flex items-center justify-center gap-2">
@@ -132,7 +130,7 @@
             </div>
         </section>
 
-        <!-- DAILY LOG (ENTRY) -->
+        <!-- 2. INPUT TAB -->
         <section id="view-daily" class="hidden-section no-print space-y-6">
             <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2">
                 記録入力 <span id="current-date-badge" class="text-xs bg-slate-200 px-3 py-1 rounded-full text-slate-500">----/--/--</span>
@@ -140,7 +138,7 @@
 
             <div id="entry-accordion" class="space-y-4">
                 <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-                    <button onclick="toggleAccordion('inspection')" class="w-full p-5 flex justify-between items-center bg-slate-800 text-white">
+                    <button onclick="toggleAccordion('inspection')" class="w-full p-5 flex justify-between items-center bg-slate-800 text-white active:bg-slate-700">
                         <div class="text-left">
                             <span class="text-[10px] font-black text-sky-400 uppercase tracking-widest">Step 1</span>
                             <h3 class="font-bold text-lg">機器の始動前点検</h3>
@@ -159,14 +157,14 @@
             </button>
         </section>
 
-        <!-- MONTHLY REPORT -->
+        <!-- 3. REPORT TAB -->
         <section id="view-monthly" class="hidden-section space-y-4">
             <div class="no-print flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                 <h2 class="text-2xl font-black text-slate-800">月次レポート</h2>
                 <div class="flex gap-2 w-full md:w-auto">
                     <select id="report-month" class="flex-1 bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold shadow-sm" onchange="loadMonthlyTable()"></select>
                     <button onclick="loadMonthlyTable()" class="bg-white border border-slate-200 px-4 rounded-2xl text-lg shadow-sm">🔄</button>
-                    <button onclick="triggerPrint()" class="bg-sky-600 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg flex items-center gap-2">
+                    <button onclick="triggerPrint()" class="bg-sky-600 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg flex items-center justify-center gap-2 active:bg-sky-700">
                         <span>🖨️</span> 印刷
                     </button>
                 </div>
@@ -181,7 +179,7 @@
             </div>
         </section>
 
-        <!-- AI Tab -->
+        <!-- 4. AI TAB -->
         <section id="view-ai" class="hidden-section no-print space-y-4">
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                 <div class="text-center mb-6">
@@ -192,7 +190,7 @@
                     本日のデータを分析し、潜在的な危険性を予測します。
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="analyzeSafety()" class="bg-sky-600 text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2">✨ データ分析</button>
+                    <button onclick="analyzeSafety()" class="bg-sky-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">✨ データ分析</button>
                     <button id="btn-ai-speak" disabled class="bg-slate-100 text-slate-400 font-bold py-4 rounded-2xl border border-slate-200 flex items-center justify-center gap-2">📢 音声解説</button>
                 </div>
             </div>
@@ -201,17 +199,17 @@
     </main>
 
     <!-- Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-6 py-4 flex justify-between items-center z-50 no-print shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 text-sky-600">
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-6 py-4 flex justify-between items-center z-[100] no-print shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 text-sky-600 transition-all">
             <span class="text-2xl">🏠</span><span class="text-[10px] font-extrabold uppercase">Home</span>
         </button>
-        <button onclick="switchTab('daily')" id="nav-daily" class="flex flex-col items-center gap-1 text-slate-400">
+        <button onclick="switchTab('daily')" id="nav-daily" class="flex flex-col items-center gap-1 text-slate-400 transition-all">
             <span class="text-2xl">✍️</span><span class="text-[10px] font-extrabold uppercase">Input</span>
         </button>
-        <button onclick="switchTab('monthly')" id="nav-monthly" class="flex flex-col items-center gap-1 text-slate-400">
+        <button onclick="switchTab('monthly')" id="nav-monthly" class="flex flex-col items-center gap-1 text-slate-400 transition-all">
             <span class="text-2xl">📅</span><span class="text-[10px] font-extrabold uppercase">Report</span>
         </button>
-        <button onclick="switchTab('ai')" id="nav-ai" class="flex flex-col items-center gap-1 text-slate-400">
+        <button onclick="switchTab('ai')" id="nav-ai" class="flex flex-col items-center gap-1 text-slate-400 transition-all">
             <span class="text-2xl">✨</span><span class="text-[10px] font-extrabold uppercase">AI</span>
         </button>
     </nav>
@@ -221,7 +219,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- 1. CONFIGURATION ---
+        // 1. CONFIGURATION
         const config = {
             measurementPoints: [
                 { id: 'p1', label: '作業開始前', type: 'ポンプ' },
@@ -255,16 +253,12 @@
         let todayData = {};
         let inspectionState = {};
 
-        // --- 2. CORE UTILITIES ---
+        // 2. CORE UTILITIES
         const getLocalDateString = (date) => {
             const y = date.getFullYear();
             const m = String(date.getMonth() + 1).padStart(2, '0');
             const d = String(date.getDate()).padStart(2, '0');
             return `${y}-${m}-${d}`;
-        };
-
-        const getLocalMonthString = (date) => {
-            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         };
 
         const showLoader = (show) => {
@@ -285,13 +279,13 @@
 
         window.triggerPrint = () => {
             try {
-                window.print();
-                // プレビュー内での制限に対する案内
-                if (window.location.hostname.includes("usercontent.goog")) {
-                    window.showMessage("このプレビュー画面では印刷が制限されています。GitHubに公開したURLから実行してください。", "⚠️");
+                // If in iframe (preview environment), this might be blocked
+                if (window.self !== window.top) {
+                    window.showMessage("プレビュー内での印刷は制限されています。GitHubに公開したURLから実行してください。", "⚠️");
                 }
+                window.print();
             } catch (e) {
-                window.showMessage("印刷を開始できませんでした。", "❌");
+                window.showMessage("印刷メニューを開けませんでした。URLを直接開いて実行してください。", "❌");
             }
         };
 
@@ -315,21 +309,7 @@
             }
         };
 
-        const startAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else { await signInAnonymously(auth); }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) loadTodayData();
-        });
-
-        startAuth();
-
         const getRecordDoc = (dateStr) => {
-            if (!dateStr || dateStr.trim() === "") return null;
             return doc(db, 'artifacts', appId, 'public', 'data', 'daily_records', dateStr);
         };
 
@@ -348,7 +328,7 @@
                 renderInspectionUI();
                 renderEntryForms();
                 updateDashboardSummary();
-            } catch (err) { console.error("Load error", err); }
+            } catch (err) { console.error(err); }
             finally { showLoader(false); }
         };
 
@@ -363,8 +343,7 @@
                 config.gases.forEach(g => {
                     const el = document.getElementById(`${p.id}-${g.id}`);
                     if (el && el.value !== '') {
-                        const val = g.step === '1' ? parseInt(el.value) : parseFloat(el.value);
-                        pData[g.id] = val;
+                        pData[g.id] = g.step === '1' ? parseInt(el.value) : parseFloat(el.value);
                         hasPointData = true;
                     }
                 });
@@ -376,8 +355,8 @@
             updateDashboardSummary();
             await loadMonthlyTable(); 
             showLoader(false);
-            window.showMessage("クラウドに保存しました。");
-            switchTab('dashboard');
+            window.showMessage("クラウドに保存しました。", "✅");
+            window.switchTab('dashboard');
         };
 
         window.saveWorkContent = async () => {
@@ -386,7 +365,28 @@
             if (!currentUser || !dateStr) return;
             await setDoc(getRecordDoc(dateStr), { work_content: content }, { merge: true });
             todayData.work_content = content;
-            window.showMessage("作業内容を保存しました。");
+            window.showMessage("作業内容を保存しました。", "✅");
+        };
+
+        window.switchTab = (tabId) => {
+            // Hide all
+            const tabs = ['dashboard', 'daily', 'monthly', 'ai'];
+            tabs.forEach(id => {
+                const sec = document.getElementById('view-' + id);
+                if (sec) sec.classList.add('hidden-section');
+                const nav = document.getElementById('nav-' + id);
+                if (nav) nav.classList.replace('text-sky-600', 'text-slate-400');
+            });
+            // Show target
+            const target = document.getElementById('view-' + tabId);
+            if (target) {
+                target.classList.remove('hidden-section');
+                if (tabId === 'daily') loadTodayData();
+                if (tabId === 'monthly') loadMonthlyTable();
+            }
+            const activeNav = document.getElementById('nav-' + tabId);
+            if (activeNav) activeNav.classList.replace('text-slate-400', 'text-sky-600');
+            window.scrollTo(0, 0);
         };
 
         function renderInspectionUI() {
@@ -411,12 +411,17 @@
 
         window.setInspection = (id, val) => { inspectionState[id] = val; renderInspectionUI(); };
 
+        window.toggleAccordion = (id) => {
+            const content = document.getElementById('content-' + id);
+            if (content) content.classList.toggle('hidden');
+        };
+
         window.handleManualInput = (pointId) => {
             const hasData = config.gases.some(g => {
-                const el = document.getElementById(`${pointId}-${g.id}`);
+                const el = document.getElementById(pointId + '-' + g.id);
                 return el && el.value !== '';
             });
-            const badge = document.getElementById(`badge-${pointId}`);
+            const badge = document.getElementById('badge-' + pointId);
             if (badge) {
                 badge.innerText = hasData ? '記入中/済' : '未記入';
                 badge.className = `text-[10px] px-3 py-1 ${hasData ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'} rounded-full font-bold`;
@@ -460,25 +465,10 @@
                     const isInspOk = d.inspection && config.inspectionItems.every(i => d.inspection[i.id] === true);
                     const inspText = isInspOk ? 'OK' : (d.inspection && Object.keys(d.inspection).length > 0 ? 'NG' : '-');
                     let row = `<tr class="hover:bg-slate-50"><td class="border p-1 font-black text-center text-[8px]">${day}</td><td class="border p-1 text-[7px] leading-tight">${d.work_content || '-'}</td><td class="border p-1 text-center text-[8px] font-bold ${isInspOk ? 'text-emerald-600' : 'text-rose-600'}">${inspText}</td>`;
-                    config.measurementPoints.forEach(p => { const pD = d[p.id] || {}; config.gases.forEach(g => { const val = pD[g.id]; let isWarning = false; if (val !== undefined) { if (g.threshold.min && val < g.threshold.min) isWarning = true; if (g.threshold.max && val > g.threshold.max) isWarning = true; } row += `<td class="border p-1 text-center text-[7px] ${isWarning ? 'bg-rose-50 text-rose-600 font-bold' : ''}">${val ?? '-'}</td>`; }); });
+                    config.measurementPoints.forEach(p => { const pD = d[p.id] || {}; config.gases.forEach(g => { const val = pD[g.id]; let isWarn = false; if (val !== undefined) { if (g.threshold.min && val < g.threshold.min) isWarn = true; if (g.threshold.max && val > g.threshold.max) isWarn = true; } row += `<td class="border p-1 text-center text-[7px] ${isWarn ? 'bg-rose-50 text-rose-600 font-bold' : ''}">${val ?? '-'}</td>`; }); });
                     return row + `</tr>`;
                 }).join('');
-            } catch (err) { body.innerHTML = '<tr><td colspan="30" class="p-8 text-center text-rose-500">エラー</td></tr>'; }
-        };
-
-        window.switchTab = (tabId) => {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
-            const target = document.getElementById(`view-${tabId}`);
-            if (target) target.classList.remove('hidden-section');
-            document.querySelectorAll('nav button').forEach(b => b.classList.replace('text-sky-600', 'text-slate-400'));
-            const activeNav = document.getElementById(`nav-${tabId}`);
-            if (activeNav) activeNav.classList.replace('text-slate-400', 'text-sky-600');
-            if (tabId === 'monthly') loadMonthlyTable();
-        };
-
-        window.toggleAccordion = (id) => {
-            const content = document.getElementById(`content-${id}`);
-            if (content) content.classList.toggle('hidden');
+            } catch (err) { body.innerHTML = '<tr><td colspan="30" class="p-8 text-center text-rose-500">取得エラー</td></tr>'; }
         };
 
         window.analyzeSafety = async () => {
@@ -503,7 +493,16 @@
             } catch (e) { dashAi.innerText = "失敗"; }
         };
 
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) loadTodayData();
+        });
+
         window.onload = () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                signInWithCustomToken(auth, __initial_auth_token);
+            } else { signInAnonymously(auth); }
+
             const select = document.getElementById('report-month');
             const now = new Date();
             for (let m = 1; m <= 7; m++) {
@@ -514,8 +513,7 @@
             }
             select.value = "2026-01";
             document.getElementById('input-date').value = getLocalDateString(now);
-            renderInspectionUI();
-            renderEntryForms();
+            renderInspectionUI(); renderEntryForms();
         };
     </script>
 </body>
