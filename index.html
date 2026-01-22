@@ -31,7 +31,7 @@
             .print-only { display: block !important; }
             .print-container { width: 100% !important; margin: 0 !important; padding: 5px !important; }
             table { font-size: 7px !important; border-collapse: collapse !important; width: 100% !important; table-layout: fixed; }
-            th, td { border: 1px solid #000 !important; padding: 1px !important; word-break: break-all; }
+            th, td { border: 1px solid #000 !important; padding: 2px !important; word-break: break-all; }
         }
 
         .dot-flashing {
@@ -44,9 +44,31 @@
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             z-index: 9999; display: none;
         }
+
+        #auth-error-overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); z-index: 10000;
+            display: none; flex-direction: column; justify-content: center; align-items: center; color: white; padding: 20px; text-align: center;
+        }
     </style>
 </head>
 <body class="pb-24">
+
+    <!-- 認証エラー発生時の案内 -->
+    <div id="auth-error-overlay">
+        <div class="text-6xl mb-6">🔑</div>
+        <h2 class="text-2xl font-bold mb-4 text-white font-black">Firebaseの設定を有効にしてください</h2>
+        <p class="text-slate-300 mb-8 max-w-md leading-relaxed text-sm">
+            データの保存（クラウド連携）を有効にするため、Firebase側で「匿名サインイン」を許可してください。<br><br>
+            <strong>【解決の手順】</strong><br>
+            1. <a href="https://console.firebase.google.com/" target="_blank" class="text-sky-400 underline font-bold">Firebase Console</a> を開く<br>
+            2. 左メニューの <strong>構築 (Build)</strong> ＞ <strong>Authentication</strong> を開く<br>
+            3. <strong>Sign-in method</strong> タブを選択<br>
+            4. <strong>匿名 (Anonymous)</strong> を探し、ステータスを<strong>「有効」</strong>にして保存
+        </p>
+        <button onclick="location.reload()" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-4 px-10 rounded-full transition-all shadow-xl active:scale-95">
+            設定が完了しました
+        </button>
+    </div>
 
     <div id="custom-alert" class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700 max-w-[90%] w-full">
         <span id="alert-icon">ℹ️</span>
@@ -59,114 +81,114 @@
 
     <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg no-print">
         <div>
-            <h1 class="font-extrabold text-lg leading-tight">GX-SAFE <span class="text-sky-400">PRO</span></h1>
-            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Digital Safety Logbook</p>
+            <h1 class="font-extrabold text-lg leading-tight tracking-tight">GX-SAFE <span class="text-sky-400 font-black">PRO</span></h1>
+            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest text-white">Digital Safety Logbook</p>
         </div>
-        <div id="sync-status" class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 rounded-full border border-slate-700">
-            <div id="status-dot" class="w-2 h-2 rounded-full bg-slate-500"></div>
-            <span id="status-text" class="text-[10px] font-bold tracking-tighter uppercase">WAITING</span>
+        <div id="sync-status" class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-inner">
+            <div id="status-dot" class="w-2 h-2 rounded-full bg-slate-500 font-bold"></div>
+            <span id="status-text" class="text-[10px] font-black tracking-tighter uppercase text-white font-black tracking-widest">OFFLINE</span>
         </div>
     </header>
 
     <main class="max-w-4xl mx-auto p-4 print-container">
         
+        <!-- DASHBOARD TAB -->
         <section id="view-dashboard" class="space-y-4 no-print">
             <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
-                <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-wider">管理日付の選択</label>
-                <input type="date" id="input-date" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-xl font-bold outline-none focus:ring-4 focus:ring-sky-500/20 transition-all touch-target" onchange="loadTodayData()">
+                <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-wider font-black">管理日付の選択</label>
+                <input type="date" id="input-date" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-xl font-bold outline-none focus:ring-4 focus:ring-sky-500/20 transition-all touch-target font-black" onchange="loadTodayData()">
             </div>
 
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                <h2 class="text-xs font-bold text-slate-400 uppercase mb-4 tracking-widest">本日の作業内容</h2>
+                <h2 class="text-xs font-bold text-slate-400 uppercase mb-4 tracking-widest font-black">本日の作業内容</h2>
                 <textarea id="work-content-area" rows="4" placeholder="現場名、担当者などを記入..." 
-                          class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-base focus:ring-2 focus:ring-sky-500 outline-none transition-all"></textarea>
-                <button onclick="saveWorkContent()" class="w-full mt-4 bg-slate-900 text-white text-sm font-bold py-4 rounded-2xl shadow-lg">作業内容を保存</button>
+                          class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-base focus:ring-2 focus:ring-sky-500 outline-none transition-all font-bold"></textarea>
+                <button onclick="saveWorkContent()" class="w-full mt-4 bg-slate-900 text-white text-sm font-bold py-4 rounded-2xl hover:bg-slate-800 active:scale-95 transition-all shadow-lg font-black uppercase tracking-widest">
+                    作業内容を保存
+                </button>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-sky-500">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">最新酸素 O2</p>
-                    <div class="flex items-baseline gap-1 mt-1">
-                        <p id="dash-o2" class="text-4xl font-black text-slate-800">--.-</p>
-                        <span class="text-sm font-bold text-slate-400">%</span>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase font-black">最新酸素 O2</p>
+                    <div class="flex items-baseline gap-1 mt-1 font-black">
+                        <p id="dash-o2" class="text-4xl text-slate-800 font-black">--.-</p>
+                        <span class="text-sm text-slate-400">%</span>
                     </div>
                 </div>
                 <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-rose-500">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">最新メタン LEL</p>
-                    <div class="flex items-baseline gap-1 mt-1">
-                        <p id="dash-lel" class="text-4xl font-black text-slate-800">--</p>
-                        <span class="text-sm font-bold text-slate-400">%</span>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase font-black">最新メタン LEL</p>
+                    <div class="flex items-baseline gap-1 mt-1 font-black">
+                        <p id="dash-lel" class="text-4xl text-slate-800 font-black">--</p>
+                        <span class="text-sm text-slate-400">%</span>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- INPUT TAB -->
         <section id="view-daily" class="hidden-section no-print space-y-6">
-            <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl">
-                <h3 class="text-amber-800 text-xs font-bold mb-2 flex items-center gap-2">⚠️ 安全判断の目安（退避基準）</h3>
-                <div class="grid grid-cols-2 gap-y-1 text-[10px] text-amber-700">
-                    <div>酸素(O2): <span class="font-bold">18.0% 以下</span></div>
-                    <div>可燃性(LEL): <span class="font-bold">25% 以上</span></div>
-                    <div>一酸化(CO): <span class="font-bold">50ppm 以上</span></div>
-                    <div>硫化水素(H2S): <span class="font-bold">5.0ppm 以上</span></div>
+            <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl shadow-sm">
+                <h3 class="text-amber-800 text-xs font-bold mb-2 flex items-center gap-2 font-black tracking-tight uppercase">⚠️ 安全判断の目安（退避基準）</h3>
+                <div class="grid grid-cols-2 gap-y-1 text-[10px] text-amber-700 font-bold">
+                    <div>酸素(O2): <span class="text-rose-600 font-black tracking-widest">18.0% 以下</span></div>
+                    <div>可燃性(LEL): <span class="text-rose-600 font-black tracking-widest">25% 以上</span></div>
+                    <div>一酸化(CO): <span class="text-rose-600 font-black tracking-widest">50ppm 以上</span></div>
+                    <div>硫化水素(H2S): <span class="text-rose-600 font-black tracking-widest">5.0ppm 以上</span></div>
                 </div>
             </div>
 
-            <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2">
-                記録入力 <span id="current-date-badge" class="text-xs bg-slate-200 px-3 py-1 rounded-full text-slate-500">----/--/--</span>
+            <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2 font-black">
+                記録入力 <span id="current-date-badge" class="text-xs bg-slate-200 px-3 py-1 rounded-full text-slate-500 font-bold tracking-tight">----/--/--</span>
             </h2>
 
-            <div id="entry-accordion" class="space-y-4">
+            <div id="entry-accordion" class="space-y-4 font-bold">
                 <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-                    <button onclick="toggleAccordion('inspection')" class="w-full p-5 flex justify-between items-center bg-slate-800 text-white">
+                    <button onclick="toggleAccordion('inspection')" class="w-full p-5 flex justify-between items-center bg-slate-800 text-white active:bg-slate-700 transition-colors">
                         <div class="text-left">
-                            <span class="text-[10px] font-black text-sky-400 uppercase tracking-widest">Step 1</span>
-                            <h3 class="font-bold text-lg">機器の始動前点検</h3>
+                            <span class="text-[10px] font-black text-sky-400 uppercase tracking-widest font-black">Step 1</span>
+                            <h3 class="font-bold text-lg text-white font-black">機器の始動前点検</h3>
                         </div>
-                        <span id="badge-inspection" class="text-[10px] px-3 py-1 bg-slate-700 text-slate-300 rounded-full font-bold">未確認</span>
+                        <span id="badge-inspection" class="text-[10px] px-3 py-1 bg-slate-700 text-slate-300 rounded-full font-black tracking-widest">未確認</span>
                     </button>
                     <div id="content-inspection" class="p-5 space-y-3 hidden"><div id="inspection-items-container" class="grid grid-cols-1 gap-3"></div></div>
                 </div>
                 <div id="measurement-points-container" class="space-y-4"></div>
             </div>
 
-            <button onclick="saveDailyRecord()" class="w-full bg-slate-900 text-white font-black py-6 rounded-3xl shadow-2xl text-lg">記録をクラウドに保存</button>
+            <button onclick="saveDailyRecord()" class="w-full bg-slate-900 text-white font-black py-6 rounded-3xl shadow-2xl active:scale-95 transition-all text-lg flex items-center justify-center gap-3 font-black uppercase tracking-widest">
+                <span>💾</span> 記録をクラウドに保存
+            </button>
         </section>
 
+        <!-- REPORT TAB -->
         <section id="view-monthly" class="hidden-section space-y-4">
             <div class="no-print flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                <h2 class="text-2xl font-black text-slate-800">月次レポート</h2>
+                <h2 class="text-2xl font-black text-slate-800 font-black tracking-tight uppercase">月次レポート</h2>
                 <div class="flex gap-2 w-full md:w-auto">
-                    <select id="report-month" class="flex-1 bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold shadow-sm" onchange="loadMonthlyTable()"></select>
-                    <button onclick="loadMonthlyTable()" class="bg-white border border-slate-200 px-4 rounded-2xl text-lg shadow-sm">🔄</button>
-                    <button onclick="triggerPrint()" class="bg-sky-600 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg flex items-center justify-center gap-2"><span>🖨️</span> 印刷</button>
-                </div>
-            </div>
-
-            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-[10px] mb-2">
-                <p class="font-bold text-slate-500 mb-1 tracking-widest uppercase">【安全基準：これを超えたら即座に退避】</p>
-                <div class="grid grid-cols-4 gap-1 text-slate-600">
-                    <div>O2: 18.0%↓</div><div>LEL: 25%↑</div><div>CO: 50ppm↑</div><div>H2S: 5.0ppm↑</div>
+                    <select id="report-month" class="flex-1 bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold shadow-sm font-black" onchange="loadMonthlyTable()"></select>
+                    <button onclick="loadMonthlyTable()" class="bg-white border border-slate-200 px-4 rounded-2xl text-lg shadow-sm active:scale-90 transition-transform font-black">🔄</button>
+                    <button onclick="triggerPrint()" class="bg-sky-600 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg flex items-center justify-center gap-2 active:bg-sky-700 font-black uppercase tracking-widest"><span>🖨️</span> 印刷</button>
                 </div>
             </div>
 
             <div class="bg-white p-1 rounded-2xl border border-slate-200 overflow-x-auto shadow-sm print-container">
-                <div class="print-only hidden text-center mb-4"><h1 class="text-lg font-bold">GX-3R Pro 計測記録票</h1><p class="text-xs" id="print-month-title"></p></div>
+                <div class="print-only hidden text-center mb-4"><h1 class="text-lg font-bold font-black">ポータブルガスモニター GX-3R Pro 計測記録票</h1><p class="text-xs font-bold" id="print-month-title"></p></div>
                 <table class="w-full text-left border-collapse" id="monthly-table"></table>
             </div>
         </section>
     </main>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-6 py-4 flex justify-between items-center z-[100] no-print shadow-lg">
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 text-sky-600"><span class="text-2xl">🏠</span><span class="text-[10px] font-black uppercase">Home</span></button>
-        <button onclick="switchTab('daily')" id="nav-daily" class="flex flex-col items-center gap-1 text-slate-400"><span class="text-2xl">✍️</span><span class="text-[10px] font-black uppercase">Input</span></button>
-        <button onclick="switchTab('monthly')" id="nav-monthly" class="flex flex-col items-center gap-1 text-slate-400"><span class="text-2xl">📅</span><span class="text-[10px] font-black uppercase">Report</span></button>
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 text-sky-600 font-black transition-all"><span class="text-2xl">🏠</span><span class="text-[10px] uppercase font-black tracking-tighter">Home</span></button>
+        <button onclick="switchTab('daily')" id="nav-daily" class="flex flex-col items-center gap-1 text-slate-400 font-black transition-all"><span class="text-2xl">✍️</span><span class="text-[10px] uppercase font-black tracking-tighter">Input</span></button>
+        <button onclick="switchTab('monthly')" id="nav-monthly" class="flex flex-col items-center gap-1 text-slate-400 font-black transition-all"><span class="text-2xl">📅</span><span class="text-[10px] uppercase font-black tracking-tighter">Report</span></button>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const config = {
             measurementPoints: [
@@ -185,25 +207,20 @@
             inspectionItems: [{ id: 'batt', label: '電池残量' }, { id: 'case', label: '筐体破損' }, { id: 'filter', label: 'フィルタ' }, { id: 'heart', label: '動作表示' }]
         };
 
-        let firebaseConfig;
-        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-            firebaseConfig = JSON.parse(__firebase_config);
-        } else {
-            // ★ GitHub公開時は、ここから下の { } の中をご自身のものに書き換えてください ★
-            firebaseConfig = {
-                apiKey: "ここに貼り付け",
-                authDomain: "your-project.firebaseapp.com",
-                projectId: "your-project",
-                storageBucket: "your-project.appspot.com",
-                messagingSenderId: "123456789",
-                appId: "1:123456789:web:abcdef"
-            };
-        }
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7CsmHTM1opph0rU_mh13YO7MCsF4hY48",
+            authDomain: "gx-safe-pro-data.firebaseapp.com",
+            projectId: "gx-safe-pro-data",
+            storageBucket: "gx-safe-pro-data.firebasestorage.app",
+            messagingSenderId: "264176312785",
+            appId: "1:264176312785:web:44ed11c4f0dbbeb8f5c0f0",
+            measurementId: "G-1MZCE0R6Y2"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gx3r-log-system-v2';
+        const appId = 'gx3r-log-system-v2';
 
         let currentUser = null;
         let todayData = {};
@@ -216,13 +233,20 @@
             return `${y}-${m}-${d}`;
         };
 
-        const showLoader = (show) => { document.getElementById('global-loader').classList.toggle('hidden', !show); };
+        const showLoader = (show) => { 
+            const loader = document.getElementById('global-loader');
+            if(loader) loader.classList.toggle('hidden', !show); 
+        };
+
         window.showMessage = (msg, icon = "ℹ️") => {
             const box = document.getElementById('custom-alert');
-            document.getElementById('alert-icon').innerText = icon;
-            document.getElementById('alert-message').innerText = msg;
+            const iconEl = document.getElementById('alert-icon');
+            const msgEl = document.getElementById('alert-message');
+            if(!box || !iconEl || !msgEl) return;
+            iconEl.innerText = icon;
+            msgEl.innerText = msg;
             box.style.display = "flex";
-            setTimeout(() => { box.style.display = "none"; }, 5000);
+            setTimeout(() => { box.style.display = "none"; }, 6000);
         };
 
         window.triggerPrint = () => { window.print(); };
@@ -248,7 +272,7 @@
         const getRecordPath = (dateStr) => doc(db, 'artifacts', appId, 'public', 'data', 'daily_records', dateStr);
 
         window.loadTodayData = async () => {
-            if (!currentUser) return;
+            if (!currentUser || !db) return;
             const dateStr = document.getElementById('input-date').value;
             if (!dateStr) return;
             showLoader(true);
@@ -259,32 +283,34 @@
                 document.getElementById('current-date-badge').innerText = dateStr;
                 inspectionState = todayData.inspection || {};
                 renderInspectionUI(); renderEntryForms(); updateDashboardSummary();
-            } catch (err) { console.error(err); } finally { showLoader(false); }
+            } catch (err) { console.error("Load failed", err); } finally { showLoader(false); }
         };
 
         window.saveDailyRecord = async () => {
-            if (!currentUser) return;
+            if (!currentUser) { window.showMessage("接続待ち...", "⏳"); return; }
             const dateStr = document.getElementById('input-date').value;
             showLoader(true);
             const record = { inspection: inspectionState, work_content: document.getElementById('work-content-area').value, timestamp: Date.now() };
             config.measurementPoints.forEach(p => {
                 const pData = {}; let has = false;
-                config.gases.forEach(g => { const el = document.getElementById(p.id + '-' + g.id); if (el && el.value !== '') { pData[g.id] = g.step === '1' ? parseInt(el.value) : parseFloat(el.value); has = true; } });
+                config.gases.forEach(g => { 
+                    const el = document.getElementById(p.id + '-' + g.id); 
+                    if (el && el.value !== '') { pData[g.id] = g.step === '1' ? parseInt(el.value) : parseFloat(el.value); has = true; } 
+                });
                 if (has) record[p.id] = pData;
             });
             try {
                 await setDoc(getRecordPath(dateStr), record, { merge: true });
-                todayData = record; renderEntryForms(); updateDashboardSummary();
-                window.showMessage("保存完了", "✅"); window.switchTab('dashboard');
-            } catch (err) { window.showMessage("保存失敗：権限を確認してください", "❌"); } finally { showLoader(false); }
+                window.showMessage("保存しました", "✅"); window.switchTab('dashboard');
+            } catch (err) { window.showMessage("保存失敗", "❌"); } finally { showLoader(false); }
         };
 
         window.saveWorkContent = async () => {
-            if (!currentUser) return;
+            if (!currentUser || !db) return;
             const dateStr = document.getElementById('input-date').value;
             try {
                 await setDoc(getRecordPath(dateStr), { work_content: document.getElementById('work-content-area').value }, { merge: true });
-                window.showMessage("内容を保存しました", "✅");
+                window.showMessage("保存しました", "✅");
             } catch (e) { console.error(e); }
         };
 
@@ -292,29 +318,26 @@
             const container = document.getElementById('inspection-items-container');
             if(!container) return;
             container.innerHTML = config.inspectionItems.map(item => `
-                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <p class="text-sm font-bold text-slate-700">${item.label}</p>
+                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-inner">
+                    <p class="text-sm font-bold text-slate-700 font-black tracking-tight uppercase font-black">${item.label}</p>
                     <div class="flex bg-white rounded-xl p-1 border shadow-sm">
-                        <button onclick="setInspection('${item.id}', true)" class="px-5 py-2 rounded-lg text-xs font-bold ${inspectionState[item.id] === true ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-400'}">良</button>
-                        <button onclick="setInspection('${item.id}', false)" class="px-5 py-2 rounded-lg text-xs font-bold ${inspectionState[item.id] === false ? 'bg-rose-500 text-white shadow-md' : 'text-slate-400'}">否</button>
+                        <button onclick="setInspection('${item.id}', true)" class="px-5 py-2 rounded-lg text-xs font-bold transition-all ${inspectionState[item.id] === true ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-400 hover:bg-slate-100'} font-black">良</button>
+                        <button onclick="setInspection('${item.id}', false)" class="px-5 py-2 rounded-lg text-xs font-bold transition-all ${inspectionState[item.id] === false ? 'bg-rose-500 text-white shadow-md' : 'text-slate-400 hover:bg-slate-100'} font-black">否</button>
                     </div>
                 </div>`).join('');
             const isOk = config.inspectionItems.every(i => inspectionState[i.id] === true);
             const badge = document.getElementById('badge-inspection');
             if(badge) {
                 badge.innerText = isOk ? '確認済' : '未確認';
-                badge.className = `text-[10px] px-3 py-1 ${isOk ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-300'} rounded-full font-bold`;
+                badge.className = `text-[10px] px-3 py-1 ${isOk ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-300'} rounded-full font-black tracking-widest font-black`;
             }
         }
         window.setInspection = (id, val) => { inspectionState[id] = val; renderInspectionUI(); };
-        window.toggleAccordion = (id) => { 
-            const el = document.getElementById('content-' + id);
-            if(el) el.classList.toggle('hidden'); 
-        };
+        window.toggleAccordion = (id) => { const el = document.getElementById('content-' + id); if(el) el.classList.toggle('hidden'); };
         window.handleManualInput = (pointId) => {
             const has = config.gases.some(g => { const el = document.getElementById(pointId + '-' + g.id); return el && el.value !== ''; });
             const badge = document.getElementById('badge-' + pointId);
-            if(badge) badge.className = `text-[10px] px-3 py-1 ${has ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'} rounded-full font-bold`;
+            if(badge) badge.className = `text-[10px] px-3 py-1 ${has ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'} rounded-full font-black`;
         };
 
         function renderEntryForms() {
@@ -322,16 +345,16 @@
             if(!container) return;
             container.innerHTML = config.measurementPoints.map(p => `
                 <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-                    <button onclick="toggleAccordion('${p.id}')" class="w-full p-5 flex justify-between items-center bg-slate-50">
-                        <div class="text-left"><h3 class="font-bold text-slate-800 text-lg">${p.label}</h3></div>
-                        <span id="badge-${p.id}" class="text-[10px] px-3 py-1 ${(todayData[p.id]) ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'} rounded-full font-bold">${(todayData[p.id]) ? '済' : '未'}</span>
+                    <button onclick="toggleAccordion('${p.id}')" class="w-full p-5 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div class="text-left"><h3 class="font-bold text-slate-800 text-lg font-black uppercase tracking-tight font-black">${p.label}</h3></div>
+                        <span id="badge-${p.id}" class="text-[10px] px-3 py-1 ${(todayData[p.id]) ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'} rounded-full font-black">${(todayData[p.id]) ? '済' : '未'}</span>
                     </button>
                     <div id="content-${p.id}" class="p-6 grid grid-cols-2 gap-4 hidden border-t">
                         ${config.gases.map(g => `
                             <div class="space-y-1">
-                                <label class="text-[11px] font-bold text-slate-400 uppercase">${g.label}</label>
-                                <input type="number" step="${g.step}" id="${p.id}-${g.id}" oninput="handleManualInput('${p.id}')" value="${todayData[p.id]?.[g.id] || ''}" class="w-full bg-slate-50 p-4 rounded-2xl border font-bold touch-target">
-                                <p class="text-[8px] text-slate-400">退避: ${g.type==='min'?g.threshold+'%↓':g.threshold+g.unit+'↑'}</p>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-tight font-black">${g.label}</label>
+                                <input type="number" step="${g.step}" id="${p.id}-${g.id}" oninput="handleManualInput('${p.id}')" value="${todayData[p.id]?.[g.id] || ''}" class="w-full bg-slate-50 p-4 rounded-2xl border font-bold touch-target outline-none focus:ring-2 focus:ring-sky-500/50 transition-all font-black">
+                                <p class="text-[8px] text-slate-400 leading-tight font-black uppercase tracking-tighter">退避: ${g.type==='min'?g.threshold+'%↓':g.threshold+g.unit+'↑'}</p>
                             </div>`).join('')}
                     </div>
                 </div>`).join('');
@@ -339,36 +362,34 @@
         }
 
         window.loadMonthlyTable = async () => {
-            if (!currentUser) return;
-            const selectEl = document.getElementById('report-month');
-            if(!selectEl) return;
-            const monthVal = selectEl.value;
+            if (!currentUser || !db) return;
+            const monthVal = document.getElementById('report-month').value;
             const table = document.getElementById('monthly-table');
             const printTitle = document.getElementById('print-month-title');
-            if (printTitle) printTitle.innerText = monthVal + " 分";
-            
-            table.innerHTML = `<thead class="bg-slate-900 text-white"><tr><th class="p-2 border text-center" rowspan="2" style="width:60px">日付</th><th class="p-2 border text-center" rowspan="2" style="width:30px">点検</th>${config.measurementPoints.map(p => `<th class="p-1 border text-center text-[8px]" colspan="4">${p.label.substring(0,2)}</th>`).join('')}</tr><tr class="bg-slate-800 text-[6px]">${config.measurementPoints.map(p => `<th class="p-1 border text-center">O2</th><th class="p-1 border text-center">LEL</th><th class="p-1 border text-center">CO</th><th class="p-1 border text-center">H2S</th>`).join('')}</tr></thead><tbody id="mtb"></tbody>`;
-            
+            if(printTitle) printTitle.innerText = monthVal + " 分";
+            table.innerHTML = `<thead class="bg-slate-900 text-white"><tr><th class="p-2 border text-center font-black" rowspan="2" style="width:60px text-xs uppercase tracking-widest font-black">日付</th><th class="p-2 border text-center font-black" rowspan="2" style="width:30px text-xs uppercase tracking-widest font-black">点検</th>${config.measurementPoints.map(p => `<th class="p-1 border text-center text-[8px] font-black" colspan="4 uppercase tracking-tighter font-black">${p.label.substring(0,2)}</th>`).join('')}</tr><tr class="bg-slate-800 text-[6px] font-black">${config.measurementPoints.map(p => `<th class="p-1 border text-center uppercase font-black">O2</th><th class="p-1 border text-center uppercase font-black">LEL</th><th class="p-1 border text-center uppercase font-black">CO</th><th class="p-1 border text-center uppercase font-black">H2S</th>`).join('')}</tr></thead><tbody id="mtb"></tbody>`;
             try {
                 const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'daily_records'));
                 const monthData = snap.docs.filter(d => d.id.startsWith(monthVal)).sort((a,b) => a.id.localeCompare(b.id));
-                document.getElementById('mtb').innerHTML = monthData.map(doc => {
-                    const d = doc.data(); 
-                    const parts = doc.id.split('-');
-                    const dateLabel = `${parseInt(parts[1])}月${parseInt(parts[2])}日`;
-                    const isOk = d.inspection && Object.values(d.inspection).every(v => v === true);
-                    let row = `<tr><td class="border p-1 text-[9px] font-bold text-center bg-slate-50">${dateLabel}</td><td class="border p-1 text-center text-[8px] font-bold ${isOk ? 'text-emerald-600' : 'text-rose-500'}">${isOk ? 'OK' : 'NG'}</td>`;
-                    config.measurementPoints.forEach(p => { 
-                        const pD = d[p.id] || {};
-                        config.gases.forEach(g => {
-                            const val = pD[g.id];
-                            let isDanger = (val !== undefined) && ((g.type === 'min' && val <= g.threshold) || (g.type === 'max' && val >= g.threshold));
-                            row += `<td class="border p-1 text-center text-[7px] ${isDanger ? 'val-danger' : ''}">${val ?? '-'}</td>`;
+                const body = document.getElementById('mtb');
+                if(body) {
+                    body.innerHTML = monthData.map(doc => {
+                        const d = doc.data(); 
+                        const dateLabel = `${parseInt(doc.id.split('-')[1])}月${parseInt(doc.id.split('-')[2])}日`;
+                        const isOk = d.inspection && Object.values(d.inspection).every(v => v === true);
+                        let row = `<tr><td class="border p-1 text-[9px] font-bold text-center bg-slate-50 font-black">${dateLabel}</td><td class="border p-1 text-center text-[8px] font-bold ${isOk ? 'text-emerald-600' : 'text-rose-500'} font-black">${isOk ? 'OK' : 'NG'}</td>`;
+                        config.measurementPoints.forEach(p => { 
+                            const pD = d[p.id] || {};
+                            config.gases.forEach(g => {
+                                const val = pD[g.id];
+                                let isDanger = (val !== undefined) && ((g.type === 'min' && val <= g.threshold) || (g.type === 'max' && val >= g.threshold));
+                                row += `<td class="border p-1 text-center text-[7px] font-bold ${isDanger ? 'val-danger' : ''}">${val ?? '-'}</td>`;
+                            });
                         });
-                    });
-                    return row + `</tr>`;
-                }).join('');
-            } catch (err) { console.error(err); }
+                        return row + `</tr>`;
+                    }).join('');
+                }
+            } catch (err) { console.error("Load failed", err); }
         };
 
         window.updateDashboardSummary = () => {
@@ -383,10 +404,12 @@
 
         const initAuth = async () => {
             try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else { await signInAnonymously(auth); }
-            } catch (e) { console.error("Auth Init Error", e); }
+                await signInAnonymously(auth);
+            } catch (e) {
+                if (e.code === 'auth/configuration-not-found' || e.code === 'auth/operation-not-allowed') {
+                    document.getElementById('auth-error-overlay').style.display = 'flex';
+                }
+            }
         };
 
         onAuthStateChanged(auth, (user) => { 
@@ -394,10 +417,13 @@
             const dot = document.getElementById('status-dot');
             const txt = document.getElementById('status-text');
             if (user) {
-                dot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
-                txt.innerText = "CONNECTED";
+                if(dot) dot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse transition-all shadow-[0_0_8px_rgba(16,185,129,0.5)]";
+                if(txt) { txt.innerText = "CONNECTED"; txt.classList.add("text-emerald-400"); }
                 window.loadTodayData(); 
-            } else { dot.className = "w-2 h-2 rounded-full bg-rose-500"; txt.innerText = "OFFLINE"; }
+            } else { 
+                if(dot) dot.className = "w-2 h-2 rounded-full bg-rose-500 transition-all"; 
+                if(txt) { txt.innerText = "OFFLINE"; txt.classList.remove("text-emerald-400"); }
+            }
         });
 
         window.onload = () => {
@@ -417,4 +443,3 @@
     </script>
 </body>
 </html>
-
