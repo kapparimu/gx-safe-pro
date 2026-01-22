@@ -11,6 +11,7 @@
         :root {
             --safety-blue: #0ea5e9;
             --danger-red: #ef4444;
+            --warning-orange: #f59e0b;
             --success-green: #10b981;
         }
         body {
@@ -22,28 +23,23 @@
         .hidden-section { display: none !important; }
         .touch-target { min-height: 48px; }
         
-        /* Print Styles */
+        .val-danger { color: var(--danger-red); font-weight: 800; background-color: #fee2e2; }
+
         @media print {
             .no-print { display: none !important; }
             body { background-color: white !important; padding: 0 !important; }
             .print-only { display: block !important; }
             .print-container { width: 100% !important; margin: 0 !important; padding: 5px !important; }
             table { font-size: 7px !important; border-collapse: collapse !important; width: 100% !important; table-layout: fixed; }
-            th, td { border: 1px solid #000 !important; padding: 2px !important; word-break: break-all; }
+            th, td { border: 1px solid #000 !important; padding: 1px !important; word-break: break-all; }
         }
 
-        .input-focus:focus { outline: 3px solid var(--safety-blue); border-color: transparent; }
         .dot-flashing {
             position: relative; width: 10px; height: 10px; border-radius: 5px;
             background-color: var(--safety-blue); animation: dot-flashing 1s infinite linear alternate;
         }
         @keyframes dot-flashing { 0% { opacity: 1; } 50%, 100% { opacity: 0.2; } }
         
-        .ai-glow {
-            box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
-            border: 1px solid rgba(14, 165, 233, 0.3);
-        }
-
         #custom-alert {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             z-index: 9999; display: none;
@@ -52,13 +48,11 @@
 </head>
 <body class="pb-24">
 
-    <!-- Custom Alert Notification -->
     <div id="custom-alert" class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700 max-w-[90%] w-full">
         <span id="alert-icon">ℹ️</span>
         <p id="alert-message" class="text-xs font-bold leading-tight"></p>
     </div>
 
-    <!-- Loading Overlay -->
     <div id="global-loader" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
         <div class="dot-flashing"></div>
     </div>
@@ -68,15 +62,14 @@
             <h1 class="font-extrabold text-lg leading-tight">GX-SAFE <span class="text-sky-400">PRO</span></h1>
             <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Digital Safety Logbook</p>
         </div>
-        <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 rounded-full border border-slate-700">
-            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-            <span class="text-[10px] font-bold tracking-tighter">CLOUD ACTIVE</span>
+        <div id="sync-status" class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 rounded-full border border-slate-700">
+            <div id="status-dot" class="w-2 h-2 rounded-full bg-slate-500"></div>
+            <span id="status-text" class="text-[10px] font-bold tracking-tighter uppercase">WAITING</span>
         </div>
     </header>
 
     <main class="max-w-4xl mx-auto p-4 print-container">
         
-        <!-- 1. DASHBOARD TAB -->
         <section id="view-dashboard" class="space-y-4 no-print">
             <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
                 <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-wider">管理日付の選択</label>
@@ -85,16 +78,9 @@
 
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-4 tracking-widest">本日の作業内容</h2>
-                <textarea id="work-content-area" rows="4" placeholder="現場名、作業目的、責任者などを記入..." 
+                <textarea id="work-content-area" rows="4" placeholder="現場名、担当者などを記入..." 
                           class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-base focus:ring-2 focus:ring-sky-500 outline-none transition-all"></textarea>
-                <div class="flex gap-3 mt-4">
-                    <button onclick="saveWorkContent()" class="flex-1 bg-slate-900 text-white text-sm font-bold py-4 rounded-2xl hover:bg-slate-800 active:scale-95 transition-all shadow-lg">
-                        作業情報を保存
-                    </button>
-                    <button onclick="generateRiskAssessment()" class="flex-1 bg-sky-600 text-white text-sm font-bold py-4 rounded-2xl shadow-md hover:bg-sky-700 active:scale-95 transition-all flex items-center justify-center gap-2">
-                        <span>✨</span> 安全リスク予測
-                    </button>
-                </div>
+                <button onclick="saveWorkContent()" class="w-full mt-4 bg-slate-900 text-white text-sm font-bold py-4 rounded-2xl shadow-lg">作業内容を保存</button>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -113,105 +99,68 @@
                     </div>
                 </div>
             </div>
-
-            <div id="ai-insight-card" class="bg-white p-6 rounded-3xl border border-sky-100 ai-glow relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-5"><span class="text-6xl text-sky-500">✨</span></div>
-                <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-3">
-                    <span class="text-sky-500">✨</span> AI安全アドバイザー
-                </h3>
-                <div id="dash-ai-text" class="text-sm text-slate-600 leading-relaxed min-h-[50px]">
-                    作業内容や計測値を入力すると、AIがリアルタイムで安全診断を行います。
-                </div>
-                <div id="ai-action-buttons" class="hidden mt-4 pt-4 border-t border-slate-100 flex gap-3">
-                    <button id="btn-speak-dash" class="flex-1 text-xs font-bold py-3 bg-sky-50 text-sky-700 rounded-xl border border-sky-100 flex items-center justify-center gap-2">
-                        📢 指示を音声で聴く
-                    </button>
-                </div>
-            </div>
         </section>
 
-        <!-- 2. INPUT TAB -->
         <section id="view-daily" class="hidden-section no-print space-y-6">
+            <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl">
+                <h3 class="text-amber-800 text-xs font-bold mb-2 flex items-center gap-2">⚠️ 安全判断の目安（退避基準）</h3>
+                <div class="grid grid-cols-2 gap-y-1 text-[10px] text-amber-700">
+                    <div>酸素(O2): <span class="font-bold">18.0% 以下</span></div>
+                    <div>可燃性(LEL): <span class="font-bold">25% 以上</span></div>
+                    <div>一酸化(CO): <span class="font-bold">50ppm 以上</span></div>
+                    <div>硫化水素(H2S): <span class="font-bold">5.0ppm 以上</span></div>
+                </div>
+            </div>
+
             <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2">
                 記録入力 <span id="current-date-badge" class="text-xs bg-slate-200 px-3 py-1 rounded-full text-slate-500">----/--/--</span>
             </h2>
 
             <div id="entry-accordion" class="space-y-4">
                 <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-                    <button onclick="toggleAccordion('inspection')" class="w-full p-5 flex justify-between items-center bg-slate-800 text-white active:bg-slate-700">
+                    <button onclick="toggleAccordion('inspection')" class="w-full p-5 flex justify-between items-center bg-slate-800 text-white">
                         <div class="text-left">
                             <span class="text-[10px] font-black text-sky-400 uppercase tracking-widest">Step 1</span>
                             <h3 class="font-bold text-lg">機器の始動前点検</h3>
                         </div>
                         <span id="badge-inspection" class="text-[10px] px-3 py-1 bg-slate-700 text-slate-300 rounded-full font-bold">未確認</span>
                     </button>
-                    <div id="content-inspection" class="p-5 space-y-3 hidden">
-                        <div id="inspection-items-container" class="grid grid-cols-1 gap-3"></div>
-                    </div>
+                    <div id="content-inspection" class="p-5 space-y-3 hidden"><div id="inspection-items-container" class="grid grid-cols-1 gap-3"></div></div>
                 </div>
                 <div id="measurement-points-container" class="space-y-4"></div>
             </div>
 
-            <button onclick="saveDailyRecord()" class="w-full bg-slate-900 text-white font-black py-6 rounded-3xl shadow-2xl active:scale-95 transition-all text-lg">
-                記録をクラウドに保存
-            </button>
+            <button onclick="saveDailyRecord()" class="w-full bg-slate-900 text-white font-black py-6 rounded-3xl shadow-2xl text-lg">記録をクラウドに保存</button>
         </section>
 
-        <!-- 3. REPORT TAB -->
         <section id="view-monthly" class="hidden-section space-y-4">
             <div class="no-print flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                 <h2 class="text-2xl font-black text-slate-800">月次レポート</h2>
                 <div class="flex gap-2 w-full md:w-auto">
                     <select id="report-month" class="flex-1 bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold shadow-sm" onchange="loadMonthlyTable()"></select>
                     <button onclick="loadMonthlyTable()" class="bg-white border border-slate-200 px-4 rounded-2xl text-lg shadow-sm">🔄</button>
-                    <button onclick="triggerPrint()" class="bg-sky-600 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg flex items-center justify-center gap-2 active:bg-sky-700">
-                        <span>🖨️</span> 印刷
-                    </button>
+                    <button onclick="triggerPrint()" class="bg-sky-600 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg flex items-center justify-center gap-2"><span>🖨️</span> 印刷</button>
                 </div>
             </div>
 
-            <div class="bg-white p-2 rounded-2xl border border-slate-200 overflow-x-auto shadow-sm print-container">
-                <div class="print-only hidden text-center mb-6">
-                    <h1 class="text-lg font-bold">ポータブルガスモニター GX-3R Pro 計測記録票</h1>
-                    <p class="text-xs" id="print-month-title"></p>
+            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-[10px] mb-2">
+                <p class="font-bold text-slate-500 mb-1 tracking-widest uppercase">【安全基準：これを超えたら即座に退避】</p>
+                <div class="grid grid-cols-4 gap-1 text-slate-600">
+                    <div>O2: 18.0%↓</div><div>LEL: 25%↑</div><div>CO: 50ppm↑</div><div>H2S: 5.0ppm↑</div>
                 </div>
+            </div>
+
+            <div class="bg-white p-1 rounded-2xl border border-slate-200 overflow-x-auto shadow-sm print-container">
+                <div class="print-only hidden text-center mb-4"><h1 class="text-lg font-bold">GX-3R Pro 計測記録票</h1><p class="text-xs" id="print-month-title"></p></div>
                 <table class="w-full text-left border-collapse" id="monthly-table"></table>
             </div>
         </section>
-
-        <!-- 4. AI TAB -->
-        <section id="view-ai" class="hidden-section no-print space-y-4">
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-sky-100 rounded-full mx-auto flex items-center justify-center text-2xl mb-2">✨</div>
-                    <h2 class="text-lg font-bold">Safety AI Assistant</h2>
-                </div>
-                <div id="ai-chat-area" class="bg-slate-50 p-4 rounded-2xl min-h-[250px] text-sm text-slate-700 leading-relaxed mb-4 border border-slate-200">
-                    本日のデータを分析し、潜在的な危険性を予測します。
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="analyzeSafety()" class="bg-sky-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">✨ データ分析</button>
-                    <button id="btn-ai-speak" disabled class="bg-slate-100 text-slate-400 font-bold py-4 rounded-2xl border border-slate-200 flex items-center justify-center gap-2">📢 音声解説</button>
-                </div>
-            </div>
-        </section>
-
     </main>
 
-    <!-- Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-6 py-4 flex justify-between items-center z-[100] no-print shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 text-sky-600 transition-all">
-            <span class="text-2xl">🏠</span><span class="text-[10px] font-extrabold uppercase">Home</span>
-        </button>
-        <button onclick="switchTab('daily')" id="nav-daily" class="flex flex-col items-center gap-1 text-slate-400 transition-all">
-            <span class="text-2xl">✍️</span><span class="text-[10px] font-extrabold uppercase">Input</span>
-        </button>
-        <button onclick="switchTab('monthly')" id="nav-monthly" class="flex flex-col items-center gap-1 text-slate-400 transition-all">
-            <span class="text-2xl">📅</span><span class="text-[10px] font-extrabold uppercase">Report</span>
-        </button>
-        <button onclick="switchTab('ai')" id="nav-ai" class="flex flex-col items-center gap-1 text-slate-400 transition-all">
-            <span class="text-2xl">✨</span><span class="text-[10px] font-extrabold uppercase">AI</span>
-        </button>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-6 py-4 flex justify-between items-center z-[100] no-print shadow-lg">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 text-sky-600"><span class="text-2xl">🏠</span><span class="text-[10px] font-black uppercase">Home</span></button>
+        <button onclick="switchTab('daily')" id="nav-daily" class="flex flex-col items-center gap-1 text-slate-400"><span class="text-2xl">✍️</span><span class="text-[10px] font-black uppercase">Input</span></button>
+        <button onclick="switchTab('monthly')" id="nav-monthly" class="flex flex-col items-center gap-1 text-slate-400"><span class="text-2xl">📅</span><span class="text-[10px] font-black uppercase">Report</span></button>
     </nav>
 
     <script type="module">
@@ -219,47 +168,47 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 1. CONFIGURATION
         const config = {
             measurementPoints: [
-                { id: 'p1', label: '作業開始前', type: 'ポンプ' },
-                { id: 'p2', label: '午前作業中', type: '携帯' },
-                { id: 'p3', label: '午後開始前', type: 'ポンプ' },
-                { id: 'p4', label: '午後作業中', type: '携帯' },
-                { id: 'p5', label: '作業終了時', type: '携帯' }
+                { id: 'p1', label: '開始前', type: 'ポンプ' },
+                { id: 'p2', label: 'AM作業', type: '携帯' },
+                { id: 'p3', label: 'PM開始', type: 'ポンプ' },
+                { id: 'p4', label: 'PM作業', type: '携帯' },
+                { id: 'p5', label: '終了時', type: '携帯' }
             ],
             gases: [
-                { id: 'o2', label: '酸素', unit: '%', step: '0.1', default: '20.9', threshold: { min: 19.5, max: 23.5 } },
-                { id: 'lel', label: 'メタン', unit: '%', step: '1', default: '0', threshold: { max: 10 } },
-                { id: 'co', label: '一酸化炭素', unit: 'ppm', step: '1', default: '0', threshold: { max: 50 } },
-                { id: 'h2s', label: '硫化水素', unit: 'ppm', step: '0.1', default: '0.0', threshold: { max: 1.0 } }
+                { id: 'o2', label: '酸素', unit: '%', step: '0.1', default: '20.9', threshold: 18.0, type: 'min' },
+                { id: 'lel', label: 'メタン', unit: '%', step: '1', default: '0', threshold: 25, type: 'max' },
+                { id: 'co', label: '一酸化', unit: 'ppm', step: '1', default: '0', threshold: 50, type: 'max' },
+                { id: 'h2s', label: '硫化水素', unit: 'ppm', step: '0.1', default: '0.0', threshold: 5.0, type: 'max' }
             ],
-            inspectionItems: [
-                { id: 'batt', label: '電池残量', desc: '3ブロック点灯を確認' },
-                { id: 'case', label: '筐体破損', desc: 'ひび割れ、ネジ緩みなし' },
-                { id: 'filter', label: 'フィルタ', desc: '水濡れ、目詰まりなし' },
-                { id: 'heart', label: '動作表示', desc: 'ハートマークが点滅中' }
-            ]
+            inspectionItems: [{ id: 'batt', label: '電池残量' }, { id: 'case', label: '筐体破損' }, { id: 'filter', label: 'フィルタ' }, { id: 'heart', label: '動作表示' }]
         };
 
-        const firebaseConfig = {apiKey: "AIzaSyB7CsmHTM1opph0rU_mh13YO7MCsF4hY48",
-  authDomain: "gx-safe-pro-data.firebaseapp.com",
-  projectId: "gx-safe-pro-data",
-  storageBucket: "gx-safe-pro-data.firebasestorage.app",
-  messagingSenderId: "264176312785",
-  appId: "1:264176312785:web:44ed11c4f0dbbeb8f5c0f0",
-  measurementId: "G-1MZCE0R6Y2"};
+        let firebaseConfig;
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            // ★ GitHub公開時は、ここから下の { } の中をご自身のものに書き換えてください ★
+            firebaseConfig = {
+                apiKey: "ここに貼り付け",
+                authDomain: "your-project.firebaseapp.com",
+                projectId: "your-project",
+                storageBucket: "your-project.appspot.com",
+                messagingSenderId: "123456789",
+                appId: "1:123456789:web:abcdef"
+            };
+        }
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = window.__app_id || 'gx3r-log-system-v2';
-        const apiKey = "";
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gx3r-log-system-v2';
 
         let currentUser = null;
         let todayData = {};
         let inspectionState = {};
 
-        // 2. CORE UTILITIES
         const getLocalDateString = (date) => {
             const y = date.getFullYear();
             const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -267,248 +216,192 @@
             return `${y}-${m}-${d}`;
         };
 
-        const showLoader = (show) => {
-            const loader = document.getElementById('global-loader');
-            if(loader) loader.classList.toggle('hidden', !show);
-        };
-
+        const showLoader = (show) => { document.getElementById('global-loader').classList.toggle('hidden', !show); };
         window.showMessage = (msg, icon = "ℹ️") => {
             const box = document.getElementById('custom-alert');
-            const txt = document.getElementById('alert-message');
-            const icn = document.getElementById('alert-icon');
-            if(!box || !txt) return;
-            icn.innerText = icon;
-            txt.innerText = msg;
+            document.getElementById('alert-icon').innerText = icon;
+            document.getElementById('alert-message').innerText = msg;
             box.style.display = "flex";
-            setTimeout(() => { box.style.display = "none"; }, 4000);
+            setTimeout(() => { box.style.display = "none"; }, 5000);
         };
 
-        window.triggerPrint = () => {
-            try {
-                // If in iframe (preview environment), this might be blocked
-                if (window.self !== window.top) {
-                    window.showMessage("プレビュー内での印刷は制限されています。GitHubに公開したURLから実行してください。", "⚠️");
-                }
-                window.print();
-            } catch (e) {
-                window.showMessage("印刷メニューを開けませんでした。URLを直接開いて実行してください。", "❌");
-            }
-        };
-
-        window.updateDashboardSummary = () => {
-            const points = [...config.measurementPoints].reverse();
-            let lastData = null;
-            for (const p of points) {
-                if (todayData && todayData[p.id]) {
-                    lastData = todayData[p.id];
-                    break;
-                }
-            }
-            const dashO2 = document.getElementById('dash-o2');
-            const dashLel = document.getElementById('dash-lel');
-            if (lastData) {
-                if (dashO2) dashO2.innerText = (lastData.o2 !== undefined) ? Number(lastData.o2).toFixed(1) : '--.-';
-                if (dashLel) dashLel.innerText = (lastData.lel !== undefined) ? lastData.lel : '--';
-            } else {
-                if (dashO2) dashO2.innerText = '--.-';
-                if (dashLel) dashLel.innerText = '--';
-            }
-        };
-
-        const getRecordDoc = (dateStr) => {
-            return doc(db, 'artifacts', appId, 'public', 'data', 'daily_records', dateStr);
-        };
-
-        window.loadTodayData = async () => {
-            const dateInput = document.getElementById('input-date');
-            if (!dateInput || !currentUser) return;
-            const dateStr = dateInput.value;
-            showLoader(true);
-            try {
-                const snap = await getDoc(getRecordDoc(dateStr));
-                todayData = snap.exists() ? snap.data() : {};
-                document.getElementById('work-content-area').value = todayData.work_content || '';
-                const dateBadge = document.getElementById('current-date-badge');
-                if (dateBadge) dateBadge.innerText = dateStr;
-                inspectionState = todayData.inspection || {};
-                renderInspectionUI();
-                renderEntryForms();
-                updateDashboardSummary();
-            } catch (err) { console.error(err); }
-            finally { showLoader(false); }
-        };
-
-        window.saveDailyRecord = async () => {
-            const dateStr = document.getElementById('input-date').value;
-            if (!currentUser || !dateStr) return;
-            showLoader(true);
-            const record = { inspection: inspectionState, work_content: document.getElementById('work-content-area').value, timestamp: Date.now() };
-            config.measurementPoints.forEach(p => {
-                const pData = {};
-                let hasPointData = false;
-                config.gases.forEach(g => {
-                    const el = document.getElementById(`${p.id}-${g.id}`);
-                    if (el && el.value !== '') {
-                        pData[g.id] = g.step === '1' ? parseInt(el.value) : parseFloat(el.value);
-                        hasPointData = true;
-                    }
-                });
-                if (hasPointData) record[p.id] = pData;
-            });
-            await setDoc(getRecordDoc(dateStr), record, { merge: true });
-            todayData = record;
-            renderEntryForms();
-            updateDashboardSummary();
-            await loadMonthlyTable(); 
-            showLoader(false);
-            window.showMessage("クラウドに保存しました。", "✅");
-            window.switchTab('dashboard');
-        };
-
-        window.saveWorkContent = async () => {
-            const dateStr = document.getElementById('input-date').value;
-            const content = document.getElementById('work-content-area').value;
-            if (!currentUser || !dateStr) return;
-            await setDoc(getRecordDoc(dateStr), { work_content: content }, { merge: true });
-            todayData.work_content = content;
-            window.showMessage("作業内容を保存しました。", "✅");
-        };
+        window.triggerPrint = () => { window.print(); };
 
         window.switchTab = (tabId) => {
-            // Hide all
-            const tabs = ['dashboard', 'daily', 'monthly', 'ai'];
-            tabs.forEach(id => {
-                const sec = document.getElementById('view-' + id);
-                if (sec) sec.classList.add('hidden-section');
+            ['dashboard', 'daily', 'monthly'].forEach(id => {
+                const el = document.getElementById('view-' + id);
+                if (el) el.classList.add('hidden-section');
                 const nav = document.getElementById('nav-' + id);
                 if (nav) nav.classList.replace('text-sky-600', 'text-slate-400');
             });
-            // Show target
             const target = document.getElementById('view-' + tabId);
             if (target) {
                 target.classList.remove('hidden-section');
-                if (tabId === 'daily') loadTodayData();
-                if (tabId === 'monthly') loadMonthlyTable();
+                const nav = document.getElementById('nav-' + tabId);
+                if (nav) nav.classList.replace('text-slate-400', 'text-sky-600');
+                if (tabId === 'daily') window.loadTodayData();
+                if (tabId === 'monthly') window.loadMonthlyTable();
             }
-            const activeNav = document.getElementById('nav-' + tabId);
-            if (activeNav) activeNav.classList.replace('text-slate-400', 'text-sky-600');
             window.scrollTo(0, 0);
+        };
+
+        const getRecordPath = (dateStr) => doc(db, 'artifacts', appId, 'public', 'data', 'daily_records', dateStr);
+
+        window.loadTodayData = async () => {
+            if (!currentUser) return;
+            const dateStr = document.getElementById('input-date').value;
+            if (!dateStr) return;
+            showLoader(true);
+            try {
+                const snap = await getDoc(getRecordPath(dateStr));
+                todayData = snap.exists() ? snap.data() : {};
+                document.getElementById('work-content-area').value = todayData.work_content || '';
+                document.getElementById('current-date-badge').innerText = dateStr;
+                inspectionState = todayData.inspection || {};
+                renderInspectionUI(); renderEntryForms(); updateDashboardSummary();
+            } catch (err) { console.error(err); } finally { showLoader(false); }
+        };
+
+        window.saveDailyRecord = async () => {
+            if (!currentUser) return;
+            const dateStr = document.getElementById('input-date').value;
+            showLoader(true);
+            const record = { inspection: inspectionState, work_content: document.getElementById('work-content-area').value, timestamp: Date.now() };
+            config.measurementPoints.forEach(p => {
+                const pData = {}; let has = false;
+                config.gases.forEach(g => { const el = document.getElementById(p.id + '-' + g.id); if (el && el.value !== '') { pData[g.id] = g.step === '1' ? parseInt(el.value) : parseFloat(el.value); has = true; } });
+                if (has) record[p.id] = pData;
+            });
+            try {
+                await setDoc(getRecordPath(dateStr), record, { merge: true });
+                todayData = record; renderEntryForms(); updateDashboardSummary();
+                window.showMessage("保存完了", "✅"); window.switchTab('dashboard');
+            } catch (err) { window.showMessage("保存失敗：権限を確認してください", "❌"); } finally { showLoader(false); }
+        };
+
+        window.saveWorkContent = async () => {
+            if (!currentUser) return;
+            const dateStr = document.getElementById('input-date').value;
+            try {
+                await setDoc(getRecordPath(dateStr), { work_content: document.getElementById('work-content-area').value }, { merge: true });
+                window.showMessage("内容を保存しました", "✅");
+            } catch (e) { console.error(e); }
         };
 
         function renderInspectionUI() {
             const container = document.getElementById('inspection-items-container');
-            if (!container) return;
+            if(!container) return;
             container.innerHTML = config.inspectionItems.map(item => `
                 <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <div class="flex-1"><p class="text-sm font-bold text-slate-700">${item.label}</p><p class="text-[10px] text-slate-400 font-medium">${item.desc}</p></div>
+                    <p class="text-sm font-bold text-slate-700">${item.label}</p>
                     <div class="flex bg-white rounded-xl p-1 border shadow-sm">
-                        <button onclick="setInspection('${item.id}', true)" class="px-5 py-2 rounded-lg text-xs font-bold transition-all ${inspectionState[item.id] === true ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-400'}">良</button>
-                        <button onclick="setInspection('${item.id}', false)" class="px-5 py-2 rounded-lg text-xs font-bold transition-all ${inspectionState[item.id] === false ? 'bg-rose-500 text-white shadow-md' : 'text-slate-400'}">否</button>
+                        <button onclick="setInspection('${item.id}', true)" class="px-5 py-2 rounded-lg text-xs font-bold ${inspectionState[item.id] === true ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-400'}">良</button>
+                        <button onclick="setInspection('${item.id}', false)" class="px-5 py-2 rounded-lg text-xs font-bold ${inspectionState[item.id] === false ? 'bg-rose-500 text-white shadow-md' : 'text-slate-400'}">否</button>
                     </div>
-                </div>
-            `).join('');
-            const isAllOk = config.inspectionItems.every(i => inspectionState[i.id] === true);
+                </div>`).join('');
+            const isOk = config.inspectionItems.every(i => inspectionState[i.id] === true);
             const badge = document.getElementById('badge-inspection');
-            if (badge) {
-                badge.innerText = isAllOk ? '確認済' : '未確認/異常';
-                badge.className = `text-[10px] px-3 py-1 ${isAllOk ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-300'} rounded-full font-bold`;
+            if(badge) {
+                badge.innerText = isOk ? '確認済' : '未確認';
+                badge.className = `text-[10px] px-3 py-1 ${isOk ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-300'} rounded-full font-bold`;
             }
         }
-
         window.setInspection = (id, val) => { inspectionState[id] = val; renderInspectionUI(); };
-
-        window.toggleAccordion = (id) => {
-            const content = document.getElementById('content-' + id);
-            if (content) content.classList.toggle('hidden');
+        window.toggleAccordion = (id) => { 
+            const el = document.getElementById('content-' + id);
+            if(el) el.classList.toggle('hidden'); 
         };
-
         window.handleManualInput = (pointId) => {
-            const hasData = config.gases.some(g => {
-                const el = document.getElementById(pointId + '-' + g.id);
-                return el && el.value !== '';
-            });
+            const has = config.gases.some(g => { const el = document.getElementById(pointId + '-' + g.id); return el && el.value !== ''; });
             const badge = document.getElementById('badge-' + pointId);
-            if (badge) {
-                badge.innerText = hasData ? '記入中/済' : '未記入';
-                badge.className = `text-[10px] px-3 py-1 ${hasData ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'} rounded-full font-bold`;
-            }
+            if(badge) badge.className = `text-[10px] px-3 py-1 ${has ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'} rounded-full font-bold`;
         };
 
         function renderEntryForms() {
             const container = document.getElementById('measurement-points-container');
-            if (!container) return;
+            if(!container) return;
             container.innerHTML = config.measurementPoints.map(p => `
                 <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-                    <button onclick="toggleAccordion('${p.id}')" class="w-full p-5 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors">
-                        <div class="text-left"><span class="text-[10px] font-black text-sky-600 uppercase tracking-widest">Step ${p.id === 'p1' ? '2' : parseInt(p.id.slice(1)) + 1}</span><h3 class="font-bold text-slate-800 text-lg">${p.label} <span class="text-xs text-slate-400 font-normal">(${p.type})</span></h3></div>
-                        <span id="badge-${p.id}" class="text-[10px] px-3 py-1 ${(todayData[p.id]) ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'} rounded-full font-bold">${(todayData[p.id]) ? '記録済' : '未記入'}</span>
+                    <button onclick="toggleAccordion('${p.id}')" class="w-full p-5 flex justify-between items-center bg-slate-50">
+                        <div class="text-left"><h3 class="font-bold text-slate-800 text-lg">${p.label}</h3></div>
+                        <span id="badge-${p.id}" class="text-[10px] px-3 py-1 ${(todayData[p.id]) ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'} rounded-full font-bold">${(todayData[p.id]) ? '済' : '未'}</span>
                     </button>
-                    <div id="content-${p.id}" class="p-6 grid grid-cols-2 gap-4 hidden border-t border-slate-100">
-                        ${config.gases.map(g => `<div class="space-y-1.5"><label class="text-[11px] font-extrabold text-slate-400 uppercase tracking-tighter">${g.label} ${g.id.toUpperCase()} (${g.unit})</label><input type="number" step="${g.step}" inputmode="decimal" id="${p.id}-${g.id}" oninput="handleManualInput('${p.id}')" value="${todayData[p.id]?.[g.id] || ''}" placeholder="${g.default}" class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 input-focus font-black text-lg text-slate-800 shadow-inner"></div>`).join('')}
+                    <div id="content-${p.id}" class="p-6 grid grid-cols-2 gap-4 hidden border-t">
+                        ${config.gases.map(g => `
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">${g.label}</label>
+                                <input type="number" step="${g.step}" id="${p.id}-${g.id}" oninput="handleManualInput('${p.id}')" value="${todayData[p.id]?.[g.id] || ''}" class="w-full bg-slate-50 p-4 rounded-2xl border font-bold touch-target">
+                                <p class="text-[8px] text-slate-400">退避: ${g.type==='min'?g.threshold+'%↓':g.threshold+g.unit+'↑'}</p>
+                            </div>`).join('')}
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
             config.measurementPoints.forEach(p => handleManualInput(p.id));
         }
 
         window.loadMonthlyTable = async () => {
+            if (!currentUser) return;
             const selectEl = document.getElementById('report-month');
-            if (!selectEl) return;
+            if(!selectEl) return;
             const monthVal = selectEl.value;
             const table = document.getElementById('monthly-table');
             const printTitle = document.getElementById('print-month-title');
             if (printTitle) printTitle.innerText = monthVal + " 分";
             
-            table.innerHTML = `<thead class="bg-slate-900 text-white"><tr><th class="border border-slate-700 p-2" rowspan="2" style="width: 40px;">日付</th><th class="border border-slate-700 p-2" rowspan="2" style="width: 100px;">作業内容</th><th class="border border-slate-700 p-2 text-center" rowspan="2" style="width: 30px;">点検</th>${config.measurementPoints.map(p => `<th class="border border-slate-700 p-2 text-center text-[8px]" colspan="${config.gases.length}">${p.label}</th>`).join('')}</tr><tr class="bg-slate-800 text-[6px]">${config.measurementPoints.map(p => config.gases.map(g => `<th class="border border-slate-700 p-1 text-center">${g.id.toUpperCase()}</th>`).join('')).join('')}</tr></thead><tbody id="monthly-table-body" class="bg-white"></tbody>`;
-            const body = document.getElementById('monthly-table-body');
-            body.innerHTML = '<tr><td colspan="30" class="text-center p-8"><div class="dot-flashing mx-auto"></div></td></tr>';
+            table.innerHTML = `<thead class="bg-slate-900 text-white"><tr><th class="p-2 border text-center" rowspan="2" style="width:60px">日付</th><th class="p-2 border text-center" rowspan="2" style="width:30px">点検</th>${config.measurementPoints.map(p => `<th class="p-1 border text-center text-[8px]" colspan="4">${p.label.substring(0,2)}</th>`).join('')}</tr><tr class="bg-slate-800 text-[6px]">${config.measurementPoints.map(p => `<th class="p-1 border text-center">O2</th><th class="p-1 border text-center">LEL</th><th class="p-1 border text-center">CO</th><th class="p-1 border text-center">H2S</th>`).join('')}</tr></thead><tbody id="mtb"></tbody>`;
+            
             try {
                 const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'daily_records'));
-                const monthData = snap.docs.filter(d => d.id.startsWith(monthVal)).sort((a, b) => a.id.localeCompare(b.id));
-                if (monthData.length === 0) { body.innerHTML = `<tr><td colspan="30" class="text-center p-8 font-bold text-slate-400">データなし (${monthVal})</td></tr>`; return; }
-                body.innerHTML = monthData.map(doc => {
-                    const d = doc.data(); const day = doc.id.split('-')[2] + "日";
-                    const isInspOk = d.inspection && config.inspectionItems.every(i => d.inspection[i.id] === true);
-                    const inspText = isInspOk ? 'OK' : (d.inspection && Object.keys(d.inspection).length > 0 ? 'NG' : '-');
-                    let row = `<tr class="hover:bg-slate-50"><td class="border p-1 font-black text-center text-[8px]">${day}</td><td class="border p-1 text-[7px] leading-tight">${d.work_content || '-'}</td><td class="border p-1 text-center text-[8px] font-bold ${isInspOk ? 'text-emerald-600' : 'text-rose-600'}">${inspText}</td>`;
-                    config.measurementPoints.forEach(p => { const pD = d[p.id] || {}; config.gases.forEach(g => { const val = pD[g.id]; let isWarn = false; if (val !== undefined) { if (g.threshold.min && val < g.threshold.min) isWarn = true; if (g.threshold.max && val > g.threshold.max) isWarn = true; } row += `<td class="border p-1 text-center text-[7px] ${isWarn ? 'bg-rose-50 text-rose-600 font-bold' : ''}">${val ?? '-'}</td>`; }); });
+                const monthData = snap.docs.filter(d => d.id.startsWith(monthVal)).sort((a,b) => a.id.localeCompare(b.id));
+                document.getElementById('mtb').innerHTML = monthData.map(doc => {
+                    const d = doc.data(); 
+                    const parts = doc.id.split('-');
+                    const dateLabel = `${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+                    const isOk = d.inspection && Object.values(d.inspection).every(v => v === true);
+                    let row = `<tr><td class="border p-1 text-[9px] font-bold text-center bg-slate-50">${dateLabel}</td><td class="border p-1 text-center text-[8px] font-bold ${isOk ? 'text-emerald-600' : 'text-rose-500'}">${isOk ? 'OK' : 'NG'}</td>`;
+                    config.measurementPoints.forEach(p => { 
+                        const pD = d[p.id] || {};
+                        config.gases.forEach(g => {
+                            const val = pD[g.id];
+                            let isDanger = (val !== undefined) && ((g.type === 'min' && val <= g.threshold) || (g.type === 'max' && val >= g.threshold));
+                            row += `<td class="border p-1 text-center text-[7px] ${isDanger ? 'val-danger' : ''}">${val ?? '-'}</td>`;
+                        });
+                    });
                     return row + `</tr>`;
                 }).join('');
-            } catch (err) { body.innerHTML = '<tr><td colspan="30" class="p-8 text-center text-rose-500">取得エラー</td></tr>'; }
+            } catch (err) { console.error(err); }
         };
 
-        window.analyzeSafety = async () => {
-            const area = document.getElementById('ai-chat-area'); if (!area) return;
-            area.innerHTML = '<div class="dot-flashing mx-auto mt-4"></div>';
+        window.updateDashboardSummary = () => {
+            const points = [...config.measurementPoints].reverse();
+            let lastData = null;
+            for (const p of points) { if (todayData && todayData[p.id]) { lastData = todayData[p.id]; break; } }
+            if (lastData) {
+                document.getElementById('dash-o2').innerText = lastData.o2?.toFixed(1) || '--.-';
+                document.getElementById('dash-lel').innerText = lastData.lel || '--';
+            }
+        };
+
+        const initAuth = async () => {
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `データ: ${JSON.stringify(todayData)}。助言を日本語で。` }] }] }) });
-                const result = await response.json(); area.innerHTML = result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
-                document.getElementById('btn-ai-speak').disabled = false;
-            } catch (e) { area.innerText = "エラー"; }
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else { await signInAnonymously(auth); }
+            } catch (e) { console.error("Auth Init Error", e); }
         };
 
-        window.generateRiskAssessment = async () => {
-            const content = document.getElementById('work-content-area').value;
-            const dashAi = document.getElementById('dash-ai-text');
-            if (!content) return;
-            dashAi.innerHTML = '<div class="dot-flashing mt-2"></div>';
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `作業: "${content}"のリスク分析。` }] }] }) });
-                const result = await response.json(); dashAi.innerHTML = result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
-                document.getElementById('ai-action-buttons').classList.remove('hidden');
-            } catch (e) { dashAi.innerText = "失敗"; }
-        };
-
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, (user) => { 
             currentUser = user;
-            if (user) loadTodayData();
+            const dot = document.getElementById('status-dot');
+            const txt = document.getElementById('status-text');
+            if (user) {
+                dot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                txt.innerText = "CONNECTED";
+                window.loadTodayData(); 
+            } else { dot.className = "w-2 h-2 rounded-full bg-rose-500"; txt.innerText = "OFFLINE"; }
         });
 
         window.onload = () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                signInWithCustomToken(auth, __initial_auth_token);
-            } else { signInAnonymously(auth); }
-
+            initAuth();
             const select = document.getElementById('report-month');
             const now = new Date();
             for (let m = 1; m <= 7; m++) {
@@ -518,10 +411,9 @@
                 select.appendChild(opt);
             }
             select.value = "2026-01";
-            document.getElementById('input-date').value = getLocalDateString(now);
+            document.getElementById('input-date').value = getLocalDateString(new Date());
             renderInspectionUI(); renderEntryForms();
         };
     </script>
 </body>
 </html>
-
