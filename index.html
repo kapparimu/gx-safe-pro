@@ -53,17 +53,17 @@
 </head>
 <body class="pb-24">
 
-    <!-- 認証エラー発生時の案内 -->
+    <!-- 認証エラー発生時の案内：より詳しく修正 -->
     <div id="auth-error-overlay">
         <div class="text-6xl mb-6">🔑</div>
-        <h2 class="text-2xl font-bold mb-4 text-white font-black">Firebaseの設定を有効にしてください</h2>
-        <p class="text-slate-300 mb-8 max-w-md leading-relaxed text-sm">
-            データの保存（クラウド連携）を有効にするため、Firebase側で「匿名サインイン」を許可してください。<br><br>
-            <strong>【解決の手順】</strong><br>
-            1. <a href="https://console.firebase.google.com/" target="_blank" class="text-sky-400 underline font-bold">Firebase Console</a> を開く<br>
-            2. 左メニューの <strong>構築 (Build)</strong> ＞ <strong>Authentication</strong> を開く<br>
-            3. <strong>Sign-in method</strong> タブを選択<br>
-            4. <strong>匿名 (Anonymous)</strong> を探し、ステータスを<strong>「有効」</strong>にして保存
+        <h2 class="text-2xl font-bold mb-4 text-white font-black">保存ボタンを動かすための設定</h2>
+        <p class="text-slate-300 mb-8 max-w-md leading-relaxed text-sm text-left px-4">
+            Firebaseの画面で以下の手順でボタンをONにしてください。<br><br>
+            1. <strong>Authentication</strong> 画面にある青い <strong>「始める (Get started)」</strong> ボタンを押す（※既にある場合は次へ）<br>
+            2. 上のタブから <strong>「Sign-in method」</strong> を選ぶ<br>
+            3. 画面右にある <strong>「新しいプロバイダを追加」</strong> ボタンを押す<br>
+            4. 種類の中から <strong>「匿名 (Anonymous)」</strong> をクリックする<br>
+            5. 右上の <strong>「有効にする」</strong> スイッチをONにして <strong>「保存」</strong> を押す
         </p>
         <button onclick="location.reload()" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-4 px-10 rounded-full transition-all shadow-xl active:scale-95">
             設定が完了しました
@@ -100,7 +100,7 @@
             </div>
 
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                <h2 class="text-xs font-bold text-slate-400 uppercase mb-4 tracking-widest font-black">本日の作業内容</h2>
+                <h2 class="text-xs font-bold text-slate-400 uppercase mb-4 tracking-widest font-black text-slate-400">本日の作業内容</h2>
                 <textarea id="work-content-area" rows="4" placeholder="現場名、担当者などを記入..." 
                           class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-base focus:ring-2 focus:ring-sky-500 outline-none transition-all font-bold"></textarea>
                 <button onclick="saveWorkContent()" class="w-full mt-4 bg-slate-900 text-white text-sm font-bold py-4 rounded-2xl hover:bg-slate-800 active:scale-95 transition-all shadow-lg font-black uppercase tracking-widest">
@@ -110,16 +110,16 @@
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-sky-500">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase font-black">最新酸素 O2</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase font-black text-slate-400">最新酸素 O2</p>
                     <div class="flex items-baseline gap-1 mt-1 font-black">
                         <p id="dash-o2" class="text-4xl text-slate-800 font-black">--.-</p>
                         <span class="text-sm text-slate-400">%</span>
                     </div>
                 </div>
                 <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-rose-500">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase font-black">最新メタン LEL</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase font-black text-slate-400">最新メタン LEL</p>
                     <div class="flex items-baseline gap-1 mt-1 font-black">
-                        <p id="dash-lel" class="text-4xl text-slate-800 font-black">--</p>
+                        <p id="dash-lel" class="text-4xl font-black text-slate-800">--</p>
                         <span class="text-sm text-slate-400">%</span>
                     </div>
                 </div>
@@ -375,7 +375,8 @@
                 if(body) {
                     body.innerHTML = monthData.map(doc => {
                         const d = doc.data(); 
-                        const dateLabel = `${parseInt(doc.id.split('-')[1])}月${parseInt(doc.id.split('-')[2])}日`;
+                        const parts = doc.id.split('-');
+                        const dateLabel = `${parseInt(parts[1])}月${parseInt(parts[2])}日`;
                         const isOk = d.inspection && Object.values(d.inspection).every(v => v === true);
                         let row = `<tr><td class="border p-1 text-[9px] font-bold text-center bg-slate-50 font-black">${dateLabel}</td><td class="border p-1 text-center text-[8px] font-bold ${isOk ? 'text-emerald-600' : 'text-rose-500'} font-black">${isOk ? 'OK' : 'NG'}</td>`;
                         config.measurementPoints.forEach(p => { 
@@ -389,7 +390,7 @@
                         return row + `</tr>`;
                     }).join('');
                 }
-            } catch (err) { console.error("Load failed", err); }
+            } catch (err) { console.error("Monthly Load Error:", err); }
         };
 
         window.updateDashboardSummary = () => {
